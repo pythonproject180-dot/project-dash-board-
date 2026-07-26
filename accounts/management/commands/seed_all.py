@@ -480,23 +480,29 @@ class Command(BaseCommand):
         # Consultations — for completed visits (needed for Lab/Radiology requests)
         consult_objs = []
         med_list = list(Medicine.objects.all()[:4])
-        for i, v in enumerate(visit_objs[:5]):
-            if v.status == 'completed':
-                Consultation.objects.filter(visit=v).delete()
-                c = Consultation.objects.create(
-                    visit=v, doctor=v.doctor,
-                    diagnosis=f'Diagnosis: {["Tension headache","Viral fever","Angina","Muscle strain","Gastritis"][i]}',
-                    clinical_notes=f'Prescribed medication and follow-up in 1 week.',
-                )
-                # Add prescriptions
-                presc = Prescription.objects.create(
-                    medicine_name=med_list[i % len(med_list)].name,
-                    dosage=f'{["1 tablet twice daily","1 capsule daily","2 tablets daily","1 injection weekly","1 tablet thrice daily"][i]}',
-                    frequency='daily',
-                    duration='7 days',
-                )
-                c.prescriptions.add(presc)
-                consult_objs.append(c)
+        diagnosis_list = ['Tension headache','Viral fever','Angina','Muscle strain','Gastritis',
+                          'Upper respiratory infection','Urinary tract infection','Hypertension',
+                          'Type 2 diabetes','Iron deficiency anemia']
+        dosage_list = ['1 tablet twice daily','1 capsule daily','2 tablets daily','1 injection weekly',
+                       '1 tablet thrice daily','1 capsule twice daily','1 tablet daily','1 tablet at night',
+                       '1 tablet morning','1 syrup twice daily']
+        completed_visits = [v for v in visit_objs if v.status == 'completed']
+        for i, v in enumerate(completed_visits[:10]):
+            Consultation.objects.filter(visit=v).delete()
+            c = Consultation.objects.create(
+                visit=v, doctor=v.doctor,
+                diagnosis=f'Diagnosis: {diagnosis_list[i % len(diagnosis_list)]}',
+                clinical_notes=f'Prescribed medication and follow-up in 1 week.',
+            )
+            # Add prescriptions
+            presc = Prescription.objects.create(
+                medicine_name=med_list[i % len(med_list)].name,
+                dosage=dosage_list[i % len(dosage_list)],
+                frequency='daily',
+                duration='7 days',
+            )
+            c.prescriptions.add(presc)
+            consult_objs.append(c)
         self.stdout.write(f'  ✓ {len(consult_objs)} consultations with prescriptions\n')
 
         # Lab Test Requests — for some patients (linked to consultations)

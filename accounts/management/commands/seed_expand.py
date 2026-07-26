@@ -647,7 +647,7 @@ class Command(BaseCommand):
         # ===== 25. EXPAND TO 10+ — DISCHARGE MORE + CREATE DISCHARGE SUMMARIES =====
         self.stdout.write('Discharging admissions to create discharge summaries (target: 10+)...\n')
         admitted = list(Admission.objects.filter(status='admitted'))
-        needed_discharges = max(0, 7 - DischargeSummary.objects.count())
+        needed_discharges = max(0, 10 - DischargeSummary.objects.count())
         conditions = ['improved', 'improved', 'stable', 'improved', 'stable', 'improved', 'improved']
         for i, adm in enumerate(admitted[:needed_discharges]):
             adm.status = 'discharged'
@@ -694,8 +694,10 @@ class Command(BaseCommand):
                     created_by=admin_user,
                 )
         self.stdout.write(f'  Discharge Summaries total: {DischargeSummary.objects.count()}\n')
-        self.stdout.write(f'  Active admissions: {Admission.objects.filter(status=\"admitted\").count()}\n')
-        self.stdout.write(f'  Discharged admissions: {Admission.objects.filter(status=\"discharged\").count()}\n')
+        active_count = Admission.objects.filter(status='admitted').count()
+        discharged_count = Admission.objects.filter(status='discharged').count()
+        self.stdout.write(f'  Active admissions: {active_count}\n')
+        self.stdout.write(f'  Discharged admissions: {discharged_count}\n')
 
         # ===== 26. EXPAND TO 10+ — ADD MORE NURSING NOTES =====
         self.stdout.write('Adding more nursing notes (target: 10+)...\n')
