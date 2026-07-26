@@ -12,21 +12,51 @@ from accounts.models import AuditLog
 @login_required
 @ot_required
 def ot_dashboard(request):
-    """Operation Theatre Dashboard — surgery schedule, stats."""
+    """Operation Theatre Dashboard — surgery schedule, stats, popup modals, chart data."""
     from django.utils import timezone
+    from django.db.models import Count
+    import datetime
     today = timezone.now().date()
+    month_start = today.replace(day=1)
+
     scheduled = Surgery.objects.filter(status='scheduled').count()
     in_progress = Surgery.objects.filter(status='in_progress').count()
     completed_today = Surgery.objects.filter(status='completed', created_at__date=today).count()
+    completed_month = Surgery.objects.filter(status='completed', created_at__date__gte=month_start).count()
+    urgent = Surgery.objects.filter(priority='emergency').count()
     total = Surgery.objects.count()
 
     upcoming = Surgery.objects.filter(status='scheduled').order_by('planned_date')[:10]
     recent_completed = Surgery.objects.filter(status='completed').order_by('-completed_at')[:10]
+    recent = Surgery.objects.all().order_by('-created_at')[:15]
+
+    # Popup data
+    scheduled_list = Surgery.objects.filter(status='scheduled').select_related('patient', 'doctor').order_by('planned_date')
+    in_progress_list = Surgery.objects.filter(status='in_progress').select_related('patient', 'doctor').order_by('-created_at')
+    completed_list = Surgery.objects.filter(status='completed', created_at__date__gte=month_start).select_related('patient', 'doctor').order_by('-completed_at')
+
+    # Chart data: surgeries per day (last 7 days)
+    chart_days = []
+    chart_scheduled = []
+    chart_completed = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_scheduled.append(Surgery.objects.filter(created_at__date=d).count())
+        chart_completed.append(Surgery.objects.filter(status='completed', completed_at__date=d).count() if hasattr(Surgery, 'completed_at') else 0)
 
     context = {
         'scheduled': scheduled, 'in_progress': in_progress,
-        'completed_today': completed_today, 'total': total,
+        'completed_today': completed_today, 'completed_month': completed_month,
+        'urgent': urgent, 'total': total,
         'upcoming': upcoming, 'recent_completed': recent_completed,
+        'recent': recent,
+        'scheduled_list': scheduled_list,
+        'in_progress_list': in_progress_list,
+        'completed_list': completed_list,
+        'chart_days': chart_days,
+        'chart_scheduled': chart_scheduled,
+        'chart_completed': chart_completed,
         'role': request.user.role,
     }
     return render(request, 'dashboard/operation_theatre.html', context)

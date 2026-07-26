@@ -9,23 +9,39 @@ from accounts.decorators import medical_records_required, super_admin_required
 @login_required
 @medical_records_required
 def medical_records_dashboard(request):
-    """Medical Records Dashboard — centralized repository.
-    All departments automatically upload reports here.
-    Only Super Admin can edit. Everyone else: Read only.
-    """
+    """Medical Records Dashboard — centralized repository with popup modals and chart data."""
     total_records = MedicalRecord.objects.count()
     recent_records = MedicalRecord.objects.all().order_by('-created_at')[:20]
+    recent = recent_records
 
     # Stats by type
     type_stats = {}
-    for rtype in ['doctor_note', 'nursing_note', 'lab_report', 'radiology_report',
-                  'pharmacy_record', 'blood_bank_record', 'admission_record',
-                  'ot_record', 'insurance_doc', 'uploaded_pdf']:
+    type_labels = {'doctor_note': 'Doctor Notes', 'nursing_note': 'Nursing Notes',
+                   'lab_report': 'Lab Reports', 'radiology_report': 'Radiology Reports',
+                   'pharmacy_record': 'Pharmacy Records', 'blood_bank_record': 'Blood Bank Records',
+                   'admission_record': 'Admission Records', 'ot_record': 'OT Records',
+                   'insurance_doc': 'Insurance Docs', 'uploaded_pdf': 'Uploaded PDFs'}
+    for rtype in type_labels.keys():
         type_stats[rtype] = MedicalRecord.objects.filter(record_type=rtype).count()
+
+    # Popup data: records by type
+    doctor_notes = MedicalRecord.objects.filter(record_type='doctor_note').order_by('-created_at')[:20]
+    lab_reports = MedicalRecord.objects.filter(record_type='lab_report').order_by('-created_at')[:20]
+    radiology_reports = MedicalRecord.objects.filter(record_type='radiology_report').order_by('-created_at')[:20]
+
+    # Chart data: records by type distribution
+    chart_types = list(type_labels.values())
+    chart_counts = list(type_stats.values())
 
     context = {
         'total_records': total_records, 'recent_records': recent_records,
-        'type_stats': type_stats, 'role': request.user.role,
+        'recent': recent, 'type_stats': type_stats, 'type_labels': type_labels,
+        'doctor_notes': doctor_notes,
+        'lab_reports': lab_reports,
+        'radiology_reports': radiology_reports,
+        'chart_types': chart_types,
+        'chart_counts': chart_counts,
+        'role': request.user.role,
     }
     return render(request, 'dashboard/medical_records.html', context)
 

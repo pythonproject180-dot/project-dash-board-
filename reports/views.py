@@ -81,6 +81,15 @@ def accounts_dashboard(request):
     reg_visits = OPDVisit.objects.filter(visit_date__date__gte=month_start).order_by('-visit_date')[:20]
     pharm_sales = PharmacySale.objects.filter(sale_date__date__gte=month_start).order_by('-sale_date')[:20]
 
+    # Chart data: daily revenue (last 7 days)
+    import datetime
+    chart_days = []
+    chart_revenue = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_revenue.append(float(Bill.objects.filter(created_at__date=d).aggregate(total=Sum('net_amount'))['total'] or 0))
+
     context = {
         'dept_revenues': dept_revenues,
         'grand_total': fmt(grand_total),
@@ -89,6 +98,8 @@ def accounts_dashboard(request):
         'cash_bills': cash_bills,
         'reg_visits': reg_visits,
         'pharm_sales': pharm_sales,
+        'chart_days': chart_days,
+        'chart_revenue': chart_revenue,
         'role': request.user.role,
     }
     return render(request, 'dashboard/accounts.html', context)

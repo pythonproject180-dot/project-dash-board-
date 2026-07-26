@@ -12,4 +12,5 @@ urlpatterns = [
     path('autocomplete/', views.service_autocomplete, name='service_autocomplete'),
     path('receipt-pdf/<int:pk>/', views.bill_receipt_pdf_view, name='bill_receipt_pdf_view'),
     path('receipt-jpg/<int:pk>/', views.bill_receipt_jpg_view, name='bill_receipt_jpg_view'),
+    path('csv/', views.bills_csv_export, name='bills_csv_export'),
 ]

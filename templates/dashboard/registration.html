@@ -18,8 +18,30 @@
                 <a href="/patients/register/" class="btn btn-primary"><i class="ti ti-user-plus me-1"></i>New Patient Registration</a>
                 <a href="/patients/search/" class="btn btn-outline-primary"><i class="ti ti-search me-1"></i>Search Patient</a>
                 <a href="/patients/list/" class="btn btn-outline-secondary"><i class="ti ti-users me-1"></i>Patient List</a>
+                <a href="/patients/csv/" class="btn btn-outline-success"><i class="ti ti-download me-1"></i>Export CSV</a>
             </div>
         </div></div>
+    </div>
+</div>
+
+<!-- Registration Trend Chart -->
+<div class="row mb-6 g-6">
+    <div class="col-xl-8 col-lg-8">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="ti ti-chart-bar me-2"></i>Registration & Collection Trends (Last 7 Days)</h5></div>
+            <div class="card-body"><div id="regChart" style="height: 250px;"></div></div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="ti ti-chart-pie me-2"></i>Summary</h5></div>
+            <div class="card-body text-center">
+                <div class="d-flex justify-content-between mb-3"><span>Today Reg</span><span class="fw-bold">{{ today_registrations }}</span></div>
+                <div class="d-flex justify-content-between mb-3"><span>Month Reg</span><span class="fw-bold">{{ month_registrations }}</span></div>
+                <div class="d-flex justify-content-between mb-3"><span>Today Collection</span><span class="fw-bold text-success">{{ today_collection }}</span></div>
+                <div class="d-flex justify-content-between"><span>Total Patients</span><span class="fw-bold">{{ total_patients }}</span></div>
+            </div>
+        </div>
     </div>
 </div>
 
@@ -282,4 +304,23 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof ApexCharts !== 'undefined' && document.getElementById('regChart')) {
+        new ApexCharts(document.getElementById('regChart'), {
+            series: [{name: 'Registrations', type: 'column', data: {{ chart_registrations }}}, {name: 'Collection (NPR)', type: 'line', data: {{ chart_collections }}}],
+            chart: {height: 250, type: 'line', fontFamily: 'inherit', toolbar: {show: false}},
+            stroke: {curve: 'smooth', width: [0, 3]},
+            plotOptions: {bar: {borderRadius: 4, columnWidth: '60%'}},
+            xaxis: {categories: {{ chart_days|safe }}},
+            yaxis: [{title: {text: 'Registrations'}, labels: {formatter: function(val) { return val.toFixed(0); }}}, {title: {text: 'NPR'}, opposite: true, labels: {formatter: function(val) { return val >= 1000 ? (val/1000).toFixed(1)+'K' : val.toFixed(0); }}}],
+            colors: ['#4c6ef5', '#51cf66'],
+            fill: {type: ['solid', 'solid'], opacity: [0.85, 1]},
+            tooltip: {shared: true, intersect: false},
+            grid: {borderColor: '#f1f1f1'}
+        }).render();
+    }
+});
+</script>
 {% endblock %}

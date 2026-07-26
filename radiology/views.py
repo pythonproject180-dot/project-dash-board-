@@ -23,7 +23,7 @@ def fmt(amount):
 @login_required
 @radiology_required
 def radiology_dashboard(request):
-    """Radiology Dashboard with stats."""
+    """Radiology Dashboard with stats, popup modals, and chart data."""
     today = timezone.now().date()
     month_start = today.replace(day=1)
     year_start = today.replace(month=1, day=1)
@@ -35,12 +35,36 @@ def radiology_dashboard(request):
     completed_year = RadiologyRequest.objects.filter(status='completed', created_at__date__gte=year_start).count()
     total = RadiologyRequest.objects.count()
 
+    # Popup data
+    pending_list = RadiologyRequest.objects.filter(status='requested').select_related('patient').order_by('created_at')[:30]
+    scheduled_list = RadiologyRequest.objects.filter(status='scheduled').select_related('patient').order_by('created_at')[:30]
+    completed_today_list = RadiologyRequest.objects.filter(status='completed', created_at__date=today).select_related('patient').order_by('-completed_at')[:30]
+    completed_month_list = RadiologyRequest.objects.filter(status='completed', created_at__date__gte=month_start).select_related('patient').order_by('-completed_at')[:30]
+
+    # Chart data: scans per day (last 7 days)
+    import datetime
+    chart_days = []
+    chart_completed = []
+    chart_new = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_completed.append(RadiologyRequest.objects.filter(status='completed', created_at__date=d).count())
+        chart_new.append(RadiologyRequest.objects.filter(created_at__date=d).count())
+
     context = {
         'pending': pending, 'scheduled': scheduled,
         'completed_today': completed_today,
         'completed_month': completed_month,
         'completed_year': completed_year,
         'total': total,
+        'pending_list': pending_list,
+        'scheduled_list': scheduled_list,
+        'completed_today_list': completed_today_list,
+        'completed_month_list': completed_month_list,
+        'chart_days': chart_days,
+        'chart_completed': chart_completed,
+        'chart_new': chart_new,
         'role': request.user.role,
     }
     return render(request, 'dashboard/radiology.html', context)

@@ -7,35 +7,50 @@
         <div class="bg-gradient-mixed p-8 py-10 rounded-3 p-lg-7">
             <h1 class="fs-3">🔧 Operation Theatre</h1>
             <p>Schedule and manage surgeries in the operation theatre.</p>
+            <a href="/patients/search/" class="btn btn-dark">Search Patient</a>
         </div>
     </div>
 </div>
-<div class="row row-cols-1 row-cols-xl-3 row-cols-md-3 mb-6 g-6">
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="ti ti-calendar fs-4"></i></div><div>Scheduled</div></div>
-                <div class="fs-3 fw-bold">{{ scheduled }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><i class="ti ti-check fs-4"></i></div><div>Completed</div></div>
-                <div class="fs-3 fw-bold">{{ completed }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><i class="ti ti-alert-circle fs-4"></i></div><div>Urgent</div></div>
-                <div class="fs-3 fw-bold">{{ urgent }}</div>
-            </div>
+
+<!-- Chart -->
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="ti ti-chart-bar me-2"></i>Surgeries Per Day (Last 7 Days)</h5></div>
+            <div class="card-body"><div id="otChart" style="height: 250px;"></div></div>
         </div>
     </div>
 </div>
+
+<!-- Stats with Popup -->
+<div class="row row-cols-1 row-cols-xl-4 row-cols-md-4 mb-6 g-6">
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="ti ti-calendar fs-4"></i></div><div>Scheduled</div></div>
+            <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ scheduled }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#scheduledModal">Details →</a></div>
+        </div></div>
+    </div>
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><i class="ti ti-check fs-4"></i></div><div>Completed Today</div></div>
+            <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ completed_today }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#completedModal">Details →</a></div>
+        </div></div>
+    </div>
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><i class="ti ti-alert-circle fs-4"></i></div><div>Urgent</div></div>
+            <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ urgent }}</div></div>
+        </div></div>
+    </div>
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><i class="ti ti-activity fs-4"></i></div><div>In Progress</div></div>
+            <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ in_progress }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#inProgressModal">Details →</a></div>
+        </div></div>
+    </div>
+</div>
+
+<!-- Recent Surgery Schedule -->
 <div class="row mb-6 g-6">
     <div class="col-12">
         <div class="card">
@@ -49,11 +64,11 @@
                             <tr>
                                 <td><a href="/patients/detail/{{ s.patient.pk }}/">{{ s.patient.full_name }}</a></td>
                                 <td>{{ s.surgery_type }}</td>
-                                <td>{{ s.priority }}</td>
+                                <td><span class="badge bg-{% if s.priority == 'emergency' %}danger{% elif s.priority == 'urgent' %}warning{% else %}info{% endif %}-subtle">{{ s.priority }}</span></td>
                                 <td>{{ s.doctor|default:"—" }}</td>
                                 <td><span class="badge bg-{% if s.status == 'scheduled' %}info{% elif s.status == 'in_progress' %}warning{% elif s.status == 'completed' %}success{% else %}danger{% endif %}-subtle">{{ s.status }}</span></td>
                                 <td>{{ s.planned_date|default:"—" }}</td>
-                                <td><a href="/operation-theatre/surgery/{{ s.pk }}/" class="btn btn-sm btn-primary">Manage</a></td>
+                                <td><a href="/operation-theatre/surgery/{{ s.pk }}/\" class="btn btn-sm btn-primary">Manage</a></td>
                             </tr>
                             {% empty %}
                             <tr><td colspan="7" class="text-center text-secondary py-4">No surgeries scheduled.</td></tr>
@@ -65,4 +80,51 @@
         </div>
     </div>
 </div>
+
+<!-- Scheduled Modal -->
+<div class="modal fade" id="scheduledModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Scheduled Surgeries</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Patient</th><th>Type</th><th>Priority</th><th>Doctor</th><th>Date</th></tr></thead><tbody>
+            {% for s in scheduled_list %}<tr><td>{{ s.patient.full_name }}</td><td>{{ s.surgery_type }}</td><td>{{ s.priority }}</td><td>{{ s.doctor|default:"—" }}</td><td>{{ s.planned_date|default:"—" }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-secondary">No scheduled</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<!-- In Progress Modal -->
+<div class="modal fade" id="inProgressModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Surgeries In Progress</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Patient</th><th>Type</th><th>Doctor</th><th>Started</th></tr></thead><tbody>
+            {% for s in in_progress_list %}<tr><td>{{ s.patient.full_name }}</td><td>{{ s.surgery_type }}</td><td>{{ s.doctor|default:"—" }}</td><td>{{ s.created_at|date:"H:i" }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-secondary">No surgeries in progress</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<!-- Completed Modal -->
+<div class="modal fade" id="completedModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Completed Surgeries (This Month)</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Patient</th><th>Type</th><th>Doctor</th><th>Summary</th><th>Date</th></tr></thead><tbody>
+            {% for s in completed_list %}<tr><td>{{ s.patient.full_name }}</td><td>{{ s.surgery_type }}</td><td>{{ s.doctor|default:"—" }}</td><td>{{ s.procedure_summary|default:"—"|truncatewords:5 }}</td><td>{{ s.completed_at|date:"M d"|default:"—" }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-secondary">No completed surgeries</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof ApexCharts !== 'undefined' && document.getElementById('otChart')) {
+        new ApexCharts(document.getElementById('otChart'), {
+            series: [{name: 'Scheduled', type: 'column', data: {{ chart_scheduled }}}, {name: 'Completed', type: 'line', data: {{ chart_completed }}}],
+            chart: {height: 250, type: 'line', fontFamily: 'inherit', toolbar: {show: false}},
+            stroke: {curve: 'smooth', width: [0, 3]},
+            plotOptions: {bar: {borderRadius: 4, columnWidth: '60%'}},
+            xaxis: {categories: {{ chart_days|safe }}},
+            colors: ['#4c6ef5', '#51cf66'],
+            fill: {type: ['solid', 'solid'], opacity: [0.85, 1]},
+            grid: {borderColor: '#f1f1f1'}
+        }).render();
+    }
+});
+</script>
 {% endblock %}

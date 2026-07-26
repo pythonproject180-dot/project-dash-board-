@@ -32,7 +32,31 @@
     </div>
 </div>
 
-<!-- Collection Stats Cards -->
+<!-- Revenue Chart -->
+<div class="row mb-6 g-6">
+    <div class="col-xl-8 col-lg-8">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="fas fa-chart-area me-2"></i>Revenue & Registration Trends (Last 7 Days)</h5></div>
+            <div class="card-body">
+                <div id="superAdminChart" style="height: 300px;"></div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-4">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="fas fa-chart-pie me-2"></i>Revenue Breakdown</h5></div>
+            <div class="card-body text-center">
+                <div class="d-flex justify-content-between mb-3"><span>Today</span><span class="fw-bold text-success">{{ today_collection }}</span></div>
+                <div class="d-flex justify-content-between mb-3"><span>Monthly</span><span class="fw-bold text-info">{{ month_collection }}</span></div>
+                <div class="d-flex justify-content-between mb-3"><span>Yearly</span><span class="fw-bold text-primary">{{ year_collection }}</span></div>
+                <hr>
+                <div class="d-flex justify-content-between"><span>Total Bills</span><span class="fw-bold">{{ total_bills }}</span></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Collection Stats Cards with Popup -->
 <div class="row row-cols-1 row-cols-xl-3 row-cols-md-3 mb-6 g-6">
     <div class="col">
         <div class="card card-lg">
@@ -45,7 +69,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center lh-1">
                     <div class="fs-3 fw-bold">{{ today_collection }}</div>
-                    <a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#todayModal">Details</a>
+                    <a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#todayCollectionModal">Details →</a>
                 </div>
             </div>
         </div>
@@ -61,7 +85,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center lh-1">
                     <div class="fs-3 fw-bold">{{ month_collection }}</div>
-                    <a href="/reports/accounts/" class="text-muted small">Details</a>
+                    <a href="/reports/accounts/" class="text-muted small">Full Report →</a>
                 </div>
             </div>
         </div>
@@ -75,15 +99,13 @@
                     </div>
                     <div>Yearly Collection</div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center lh-1">
-                    <div class="fs-3 fw-bold">{{ year_collection }}</div>
-                </div>
+                <div class="fs-3 fw-bold">{{ year_collection }}</div>
             </div>
         </div>
     </div>
 </div>
 
-<!-- Stats Cards Row -->
+<!-- Stats Cards Row with Popup Modals -->
 <div class="row row-cols-1 row-cols-xl-4 row-cols-md-4 mb-6 g-6">
     <div class="col">
         <div class="card card-lg">
@@ -94,6 +116,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center lh-1">
                     <div class="fs-3 fw-bold">{{ total_patients }}</div>
+                    <a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#patientsModal">Details →</a>
                 </div>
             </div>
         </div>
@@ -107,6 +130,7 @@
                 </div>
                 <div class="d-flex justify-content-between align-items-center lh-1">
                     <div class="fs-3 fw-bold">{{ total_bills }}</div>
+                    <a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#billsModal">Details →</a>
                 </div>
             </div>
         </div>
@@ -118,9 +142,7 @@
                     <div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="fas fa-bed"></i></div>
                     <div>Active Admissions</div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center lh-1">
-                    <div class="fs-3 fw-bold">{{ total_admissions }}</div>
-                </div>
+                <div class="fs-3 fw-bold">{{ total_admissions }}</div>
             </div>
         </div>
     </div>
@@ -131,24 +153,79 @@
                     <div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><i class="fas fa-shield-alt"></i></div>
                     <div>Insurance Claims</div>
                 </div>
-                <div class="d-flex justify-content-between align-items-center lh-1">
-                    <div class="fs-3 fw-bold">{{ total_claims }}</div>
-                </div>
+                <div class="fs-3 fw-bold">{{ total_claims }}</div>
             </div>
         </div>
     </div>
 </div>
 
 <!-- Today's Collection Modal -->
-<div class="modal fade" id="todayModal" tabindex="-1">
+<div class="modal fade" id="todayCollectionModal" tabindex="-1">
     <div class="modal-dialog modal-lg">
         <div class="modal-content">
             <div class="modal-header"><h5 class="modal-title">Today's Collection Details</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
             <div class="modal-body">
-                <p class="fw-bold">Total Collection Today: {{ today_collection }}</p>
-                <p>Raw amount: NPR {{ today_collection_raw|floatformat:0 }}</p>
-                <hr>
-                <p>Visit <a href="/billing/today/">Today's Collections</a> for full breakdown.</p>
+                <p class="fw-bold mb-3">Total Collection Today: {{ today_collection }}</p>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light"><tr><th>Bill ID</th><th>Patient</th><th>Amount</th><th>Method</th><th>Time</th></tr></thead>
+                        <tbody>
+                            {% for bill in today_bills_list %}
+                            <tr><td>{{ bill.bill_id }}</td><td>{{ bill.patient.full_name }}</td><td>NPR {{ bill.net_amount }}</td><td>{{ bill.payment_method }}</td><td>{{ bill.created_at|date:"H:i" }}</td></tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-secondary">No bills today</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Patients Modal -->
+<div class="modal fade" id="patientsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">Today's Registrations</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p class="fw-bold mb-3">Today: {{ today_patients_list|length }} patients registered</p>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light"><tr><th>Hospital ID</th><th>Name</th><th>Phone</th><th>Gender</th><th>Time</th></tr></thead>
+                        <tbody>
+                            {% for p in today_patients_list %}
+                            <tr><td><a href="/patients/detail/{{ p.pk }}/">{{ p.patient_id }}</a></td><td>{{ p.full_name }}</td><td>{{ p.phone }}</td><td>{{ p.gender }}</td><td>{{ p.created_at|date:"H:i" }}</td></tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-secondary">No registrations today</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bills Modal -->
+<div class="modal fade" id="billsModal" tabindex="-1">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header"><h5 class="modal-title">All Bills</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+            <div class="modal-body">
+                <p class="fw-bold mb-3">Total Bills: {{ total_bills }}</p>
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="table-light"><tr><th>Bill ID</th><th>Patient</th><th>Amount</th><th>Status</th><th>Date</th></tr></thead>
+                        <tbody>
+                            {% for bill in today_bills_list %}
+                            <tr><td>{{ bill.bill_id }}</td><td>{{ bill.patient.full_name }}</td><td>NPR {{ bill.net_amount }}</td><td>{{ bill.payment_method }}</td><td>{{ bill.created_at|date:"M d" }}</td></tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-secondary">No bills</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
@@ -174,4 +251,28 @@
         </div>
     </div>
 </div>
+
+<!-- ApexCharts Script -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof ApexCharts !== 'undefined' && document.getElementById('superAdminChart')) {
+        var options = {
+            series: [
+                {name: 'Revenue (NPR)', type: 'column', data: {{ chart_revenue }}},
+                {name: 'Registrations', type: 'line', data: {{ chart_registrations }}}
+            ],
+            chart: {height: 300, type: 'line', fontFamily: 'inherit', toolbar: {show: false}},
+            stroke: {curve: 'smooth', width: [0, 3]},
+            plotOptions: {bar: {borderRadius: 4, columnWidth: '60%'}},
+            xaxis: {categories: {{ chart_days|safe }}},
+            yaxis: [{title: {text: 'Revenue NPR'}, labels: {formatter: function(val) { return val >= 1000 ? (val/1000).toFixed(0)+'K' : val.toFixed(0); }}}, {title: {text: 'Registrations'}, opposite: true}],
+            colors: ['#4c6ef5', '#f03e3e'],
+            fill: {type: ['solid', 'solid'], opacity: [0.85, 1]},
+            tooltip: {shared: true, intersect: false},
+            grid: {borderColor: '#f1f1f1'}
+        };
+        new ApexCharts(document.getElementById('superAdminChart'), options).render();
+    }
+});
+</script>
 {% endblock %}

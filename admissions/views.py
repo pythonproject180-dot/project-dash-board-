@@ -22,12 +22,16 @@ def fmt(amount):
 @login_required
 @admission_required
 def admission_dashboard(request):
-    """Admission Dashboard with bed availability stats."""
+    """Admission Dashboard with bed availability stats, popup modals, charts."""
     today = timezone.now().date()
+    month_start = today.replace(day=1)
+
     total_beds = Bed.objects.count()
     occupied_beds = Bed.objects.filter(is_occupied=True).count()
     available_beds = total_beds - occupied_beds
+    admitted = Admission.objects.filter(status='admitted').count()
     admitted_today = Admission.objects.filter(admission_date__date=today).count()
+    discharged_today = Admission.objects.filter(status='discharged', discharge_date__date=today).count() if hasattr(Admission, 'discharge_date') else 0
     total_admitted = Admission.objects.filter(status='admitted').count()
     total_discharged = Admission.objects.filter(status='discharged').count()
 
@@ -36,11 +40,34 @@ def admission_dashboard(request):
         occupied_beds=Count('bed', filter=Q(bed__is_occupied=True)),
     )
 
+    # Popup data
+    pending = Admission.objects.filter(status='admitted').select_related('patient', 'doctor', 'ward', 'bed').order_by('-admission_date')[:30]
+    today_admissions_list = Admission.objects.filter(admission_date__date=today).select_related('patient', 'doctor', 'ward', 'bed').order_by('-admission_date')[:30]
+    recent_discharges_list = Admission.objects.filter(status='discharged').select_related('patient', 'doctor', 'ward', 'bed').order_by('-admission_date')[:20] if hasattr(Admission, 'discharge_date') else []
+
+    # Chart data: admissions per day (last 7 days)
+    import datetime
+    chart_days = []
+    chart_admissions = []
+    chart_discharges = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_admissions.append(Admission.objects.filter(admission_date__date=d).count())
+        chart_discharges.append(Admission.objects.filter(status='discharged', discharge_date__date=d).count() if hasattr(Admission, 'discharge_date') else 0)
+
     context = {
         'total_beds': total_beds, 'occupied_beds': occupied_beds,
-        'available_beds': available_beds, 'admitted_today': admitted_today,
+        'available_beds': available_beds, 'admitted': admitted,
+        'admitted_today': admitted_today, 'discharged_today': discharged_today,
         'total_admitted': total_admitted, 'total_discharged': total_discharged,
-        'wards': wards, 'role': request.user.role,
+        'wards': wards, 'pending': pending,
+        'today_admissions_list': today_admissions_list,
+        'recent_discharges_list': recent_discharges_list,
+        'chart_days': chart_days,
+        'chart_admissions': chart_admissions,
+        'chart_discharges': chart_discharges,
+        'role': request.user.role,
     }
     return render(request, 'dashboard/admission.html', context)
 

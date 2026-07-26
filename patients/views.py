@@ -65,6 +65,17 @@ def registration_dashboard(request):
     month_patient_list = Patient.objects.filter(created_at__date__gte=month_start).order_by('-created_at')[:30]
     queue_list = OPDVisit.objects.filter(status__in=('waiting', 'in_progress')).select_related('patient', 'doctor', 'department').order_by('token_number')[:30]
 
+    # Chart data: registrations per day (last 7 days)
+    import datetime as dt
+    chart_days = []
+    chart_registrations = []
+    chart_collections = []
+    for i in range(6, -1, -1):
+        d = today - dt.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_registrations.append(Patient.objects.filter(created_at__date=d).count())
+        chart_collections.append(float(OPDVisit.objects.filter(visit_date__date=d).aggregate(total=Sum('registration_fee'))['total'] or 0))
+
     context = {
         'today_registrations': today_registrations,
         'month_registrations': month_registrations,
@@ -88,6 +99,9 @@ def registration_dashboard(request):
         'queue_list': queue_list,
         'today': today,
         'month_start': month_start,
+        'chart_days': chart_days,
+        'chart_registrations': chart_registrations,
+        'chart_collections': chart_collections,
         'role': request.user.role,
     }
     return render(request, 'dashboard/registration.html', context)
@@ -485,3 +499,22 @@ def patient_delete(request, pk):
         'role': request.user.role,
     }
     return render(request, 'dashboard/patient_delete_confirm.html', context)
+
+
+@login_required
+def patients_csv_export(request):
+    """CSV export for patient registration data."""
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="patients_report.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Hospital ID', 'First Name', 'Last Name', 'Gender', 'Age', 'Phone', 'Email',
+                     'Blood Group', 'Address', 'Registration Source', 'Is New Patient', 'Created At'])
+    for patient in Patient.objects.all().order_by('-created_at'):
+        writer.writerow([patient.patient_id, patient.first_name, patient.last_name,
+                         patient.gender, patient.age_display, patient.phone, patient.email,
+                         patient.blood_group, patient.address_display,
+                         patient.registration_source, patient.is_new_patient,
+                         patient.created_at.strftime('%Y-%m-%d')])
+    return response

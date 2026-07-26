@@ -23,6 +23,16 @@
     </div>
 </div>
 
+<!-- Revenue Trend Chart -->
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="ti ti-chart-bar me-2"></i>Daily Revenue (Last 7 Days)</h5></div>
+            <div class="card-body"><div id="accountsChart" style="height: 250px;"></div></div>
+        </div>
+    </div>
+</div>
+
 <!-- Department-wise Revenue Cards -->
 <div class="row row-cols-1 row-cols-xl-3 row-cols-md-3 mb-6 g-6">
     {% for dept_name, amount in dept_revenues.items %}
@@ -133,4 +143,20 @@
         </div>
     </div>
 </div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof ApexCharts !== 'undefined' && document.getElementById('accountsChart')) {
+        new ApexCharts(document.getElementById('accountsChart'), {
+            series: [{name: 'Revenue (NPR)', data: {{ chart_revenue }}}],
+            chart: {type: 'bar', height: 250, fontFamily: 'inherit', toolbar: {show: false}},
+            plotOptions: {bar: {borderRadius: 4, columnWidth: '60%'}},
+            xaxis: {categories: {{ chart_days|safe }}},
+            yaxis: {title: {text: 'NPR'}, labels: {formatter: function(val) { return val >= 1000 ? (val/1000).toFixed(1)+'K' : val.toFixed(0); }}},
+            colors: ['#51cf66'],
+            grid: {borderColor: '#f1f1f1'}
+        }).render();
+    }
+});
+</script>
 {% endblock %}

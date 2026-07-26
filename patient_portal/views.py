@@ -1,5 +1,5 @@
 from django.shortcuts import render, redirect, get_object_or_404
-from patients.models import Patient
+from patients.models import Patient, OPDVisit
 from billing.models import Bill
 from consultations.models import LabTestRequest, RadiologyRequest
 from pharmacy.models import PharmacySale
@@ -328,3 +328,123 @@ def portal_dashboard(request):
 def portal_logout(request):
     request.session.pop('portal_patient_id', None)
     return redirect('/portal/login/')
+
+
+def portal_appointment(request):
+    """Patient Portal Appointment Booking with Doctor Quota Check.
+    Shows available doctors, their quotas, and allows booking only if quota is available.
+    """
+    pid = request.session.get('portal_patient_id')
+    if not pid:
+        return redirect('/portal/login/')
+    patient = get_object_or_404(Patient, pk=pid)
+
+    from departments.models import Department
+    from doctors.models import Doctor, DoctorQuota
+    from appointments.models import Appointment
+    from django.utils import timezone
+
+    departments = Department.objects.filter(is_active=True)
+    doctors = Doctor.objects.filter(is_active=True)
+
+    if request.method == 'POST':
+        doctor_id = request.POST.get('doctor')
+        department_id = request.POST.get('department')
+        appointment_date = request.POST.get('appointment_date')
+        appointment_time = request.POST.get('appointment_time', '')
+        notes = request.POST.get('notes', '')
+
+        if not doctor_id or not appointment_date:
+            return render(request, 'portal/appointment.html', {
+                'patient': patient, 'departments': departments, 'doctors': doctors,
+                'error': 'Please select a doctor and appointment date.',
+            })
+
+        # Check doctor quota for the selected date
+        from datetime import datetime
+        try:
+            apt_date = datetime.strptime(appointment_date, '%Y-%m-%d').date()
+        except ValueError:
+            return render(request, 'portal/appointment.html', {
+                'patient': patient, 'departments': departments, 'doctors': doctors,
+                'error': 'Invalid date format.',
+            })
+
+        weekday = apt_date.weekday()
+        quota = DoctorQuota.objects.filter(doctor_id=doctor_id, weekday=weekday, is_active=True).first()
+
+        if quota:
+            # Check if quota is available
+            existing_appointments = Appointment.objects.filter(
+                doctor_id=doctor_id, appointment_date=appointment_date,
+                status__in=('pending', 'confirmed')
+            ).count()
+            existing_opd_visits = OPDVisit.objects.filter(
+                doctor_id=doctor_id, visit_date__date=apt_date,
+            ).count()
+            total_booked = existing_appointments + existing_opd_visits
+
+            if total_booked >= quota.max_patients:
+                doctor = Doctor.objects.get(pk=doctor_id)
+                return render(request, 'portal/appointment.html', {
+                    'patient': patient, 'departments': departments, 'doctors': doctors,
+                    'error': f'Dr. {doctor.name} quota is full for {apt_date.strftime("%A")} '
+                             f'(max {quota.max_patients} patients). Please select another doctor or date.',
+                    'quota_info': quota,
+                    'available_slots': quota.max_patients - total_booked,
+                })
+        else:
+            # No quota set for this day — may mean doctor is not available
+            doctor = Doctor.objects.get(pk=doctor_id)
+            return render(request, 'portal/appointment.html', {
+                'patient': patient, 'departments': departments, 'doctors': doctors,
+                'error': f'Dr. {doctor.name} is not available on {apt_date.strftime("%A")}. '
+                         f'Please select another day or doctor.',
+            })
+
+        # Create appointment
+        apt = Appointment.objects.create(
+            patient=patient,
+            department_id=department_id,
+            doctor_id=doctor_id,
+            appointment_date=appointment_date,
+            appointment_time=appointment_time or None,
+            notes=notes,
+        )
+
+        # Auto-attach medical record
+        MedicalRecord.objects.create(
+            patient=patient, department='appointments',
+            record_type='uploaded_pdf',
+            title=f'Appointment Booking - {apt.appointment_id}',
+            summary=f'Appointment with Dr. {apt.doctor.name} on {apt.appointment_date}. Quota verified.',
+            uploaded_by='portal_appointment', staff_name='Online Appointment',
+        )
+
+        return render(request, 'portal/appointment_success.html', {
+            'appointment': apt, 'patient': patient, 'from_portal': True,
+        })
+
+    # GET: Show available doctors with quota info
+    today = timezone.now().date()
+    doctor_quota_info = []
+    for doc in doctors:
+        today_quota = DoctorQuota.objects.filter(doctor=doc, weekday=today.weekday(), is_active=True).first()
+        if today_quota:
+            booked = OPDVisit.objects.filter(doctor=doc, visit_date__date=today).count()
+            available = today_quota.max_patients - booked
+            doctor_quota_info.append({
+                'doctor': doc, 'quota': today_quota,
+                'available': available, 'total': today_quota.max_patients,
+            })
+        else:
+            doctor_quota_info.append({
+                'doctor': doc, 'quota': None,
+                'available': 0, 'total': 0,
+            })
+
+    context = {
+        'patient': patient, 'departments': departments, 'doctors': doctors,
+        'doctor_quota_info': doctor_quota_info, 'today': today,
+    }
+    return render(request, 'portal/appointment.html', context)

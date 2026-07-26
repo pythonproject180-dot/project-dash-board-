@@ -23,7 +23,7 @@ def fmt(amount):
 @login_required
 @laboratory_required
 def lab_dashboard(request):
-    """Lab Dashboard with stats: pending, completed, today/month/year counts."""
+    """Lab Dashboard with stats, popup modals, and chart data."""
     today = timezone.now().date()
     month_start = today.replace(day=1)
     year_start = today.replace(month=1, day=1)
@@ -35,12 +35,36 @@ def lab_dashboard(request):
     completed_year = LabTestRequest.objects.filter(status='completed', created_at__date__gte=year_start).count()
     total_requests = LabTestRequest.objects.count()
 
+    # Popup data
+    pending_list = LabTestRequest.objects.filter(status='pending').select_related('patient').order_by('created_at')[:30]
+    testing_list = LabTestRequest.objects.filter(status='testing').select_related('patient').order_by('created_at')[:30]
+    completed_today_list = LabTestRequest.objects.filter(status='completed', created_at__date=today).select_related('patient').order_by('-completed_at')[:30]
+    completed_month_list = LabTestRequest.objects.filter(status='completed', created_at__date__gte=month_start).select_related('patient').order_by('-completed_at')[:30]
+
+    # Chart data: tests per day (last 7 days)
+    import datetime
+    chart_days = []
+    chart_completed = []
+    chart_new = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_completed.append(LabTestRequest.objects.filter(status='completed', created_at__date=d).count())
+        chart_new.append(LabTestRequest.objects.filter(created_at__date=d).count())
+
     context = {
         'pending': pending, 'testing': testing,
         'completed_today': completed_today,
         'completed_month': completed_month,
         'completed_year': completed_year,
         'total_requests': total_requests,
+        'pending_list': pending_list,
+        'testing_list': testing_list,
+        'completed_today_list': completed_today_list,
+        'completed_month_list': completed_month_list,
+        'chart_days': chart_days,
+        'chart_completed': chart_completed,
+        'chart_new': chart_new,
         'role': request.user.role,
     }
     return render(request, 'dashboard/laboratory.html', context)
@@ -160,3 +184,19 @@ def lab_catalog_add(request):
     return render(request, 'dashboard/lab_catalog_form.html', {
         'departments': departments, 'role': 'super_admin',
     })
+
+
+@login_required
+def lab_csv_export(request):
+    """CSV export for laboratory data."""
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="lab_report.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Request ID', 'Patient', 'Hospital ID', 'Test Name', 'Priority', 'Status', 'Result Notes', 'Date'])
+    for req in LabTestRequest.objects.all().order_by('-created_at'):
+        writer.writerow([req.pk, req.patient.full_name, req.patient.patient_id,
+                         req.test_name, req.priority, req.status,
+                         req.result_notes, req.created_at.strftime('%Y-%m-%d')])
+    return response

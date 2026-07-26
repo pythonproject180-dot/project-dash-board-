@@ -22,23 +22,49 @@ def fmt(amount):
 @login_required
 @insurance_required
 def insurance_dashboard(request):
-    """Insurance Dashboard — Nepal Government + Private insurance support."""
+    """Insurance Dashboard — Nepal Government + Private insurance support, popup modals, charts."""
     today = timezone.now().date()
     month_start = today.replace(day=1)
     year_start = today.replace(month=1, day=1)
 
     pending_claims = InsuranceClaim.objects.filter(status='pending').count()
     approved_claims = InsuranceClaim.objects.filter(status='approved').count()
+    rejected_claims = InsuranceClaim.objects.filter(status='rejected').count()
     settled_claims = InsuranceClaim.objects.filter(status='settled').count()
     total_claims = InsuranceClaim.objects.count()
 
     today_amount = InsuranceClaim.objects.filter(created_at__date=today, status='approved').aggregate(total=Sum('approved_amount'))['total'] or 0
     month_amount = InsuranceClaim.objects.filter(created_at__date__gte=month_start, status='approved').aggregate(total=Sum('approved_amount'))['total'] or 0
 
+    # Popup data
+    recent_claims = InsuranceClaim.objects.all().select_related('patient', 'insurance').order_by('-created_at')[:20]
+    pending_list = InsuranceClaim.objects.filter(status='pending').select_related('patient', 'insurance').order_by('-created_at')[:30]
+    approved_list = InsuranceClaim.objects.filter(status='approved').select_related('patient', 'insurance').order_by('-created_at')[:30]
+    settled_list = InsuranceClaim.objects.filter(status='settled').select_related('patient', 'insurance').order_by('-created_at')[:30]
+
+    # Chart data: claims per day (last 7 days)
+    import datetime
+    chart_days = []
+    chart_approved = []
+    chart_submitted = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_approved.append(InsuranceClaim.objects.filter(status='approved', created_at__date=d).count())
+        chart_submitted.append(InsuranceClaim.objects.filter(created_at__date=d).count())
+
     context = {
         'pending_claims': pending_claims, 'approved_claims': approved_claims,
-        'settled_claims': settled_claims, 'total_claims': total_claims,
+        'rejected_claims': rejected_claims, 'settled_claims': settled_claims,
+        'total_claims': total_claims,
         'today_amount': fmt(today_amount), 'month_amount': fmt(month_amount),
+        'recent_claims': recent_claims,
+        'pending_list': pending_list,
+        'approved_list': approved_list,
+        'settled_list': settled_list,
+        'chart_days': chart_days,
+        'chart_approved': chart_approved,
+        'chart_submitted': chart_submitted,
         'role': request.user.role,
     }
     return render(request, 'dashboard/insurance.html', context)

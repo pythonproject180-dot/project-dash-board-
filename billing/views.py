@@ -27,7 +27,7 @@ def format_nepal_amount(amount):
 @login_required
 @cash_counter_required
 def cash_counter_dashboard(request):
-    """Cash Counter Dashboard with collection stats and popup cards."""
+    """Cash Counter Dashboard with collection stats, popup cards, and chart data."""
     today = timezone.now().date()
     month_start = today.replace(day=1)
     year_start = today.replace(month=1, day=1)
@@ -38,8 +38,27 @@ def cash_counter_dashboard(request):
 
     today_bills = Bill.objects.filter(created_at__date=today).count()
     pending_bills = Bill.objects.filter(paid=False).count()
+    total_bills = Bill.objects.filter(paid=True).count()
 
     recent_bills = Bill.objects.all().order_by('-created_at')[:10]
+    recent = recent_bills
+
+    # Popup data: today's bills
+    today_bills_list = Bill.objects.filter(created_at__date=today).select_related('patient').order_by('-created_at')[:30]
+    # Popup data: month bills
+    month_bills_list = Bill.objects.filter(created_at__date__gte=month_start).select_related('patient').order_by('-created_at')[:30]
+    # Popup data: pending bills
+    pending_bills_list = Bill.objects.filter(paid=False).select_related('patient').order_by('-created_at')[:30]
+
+    # Chart data: daily collection (last 7 days)
+    import datetime
+    chart_days = []
+    chart_amounts = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        amt = Bill.objects.filter(created_at__date=d, paid=True).aggregate(total=Sum('net_amount'))['total'] or 0
+        chart_amounts.append(float(amt))
 
     context = {
         'today_collection': format_nepal_amount(today_collection),
@@ -50,7 +69,14 @@ def cash_counter_dashboard(request):
         'year_collection_raw': year_collection,
         'today_bills': today_bills,
         'pending_bills': pending_bills,
+        'total_bills': total_bills,
         'recent_bills': recent_bills,
+        'recent': recent,
+        'today_bills_list': today_bills_list,
+        'month_bills_list': month_bills_list,
+        'pending_bills_list': pending_bills_list,
+        'chart_days': chart_days,
+        'chart_amounts': chart_amounts,
         'role': request.user.role,
     }
     return render(request, 'dashboard/cash_counter.html', context)
@@ -245,3 +271,20 @@ def bill_receipt_jpg_view(request, pk):
     items = BillItem.objects.filter(bill=bill)
     context = {'bill': bill, 'items': items, 'role': request.user.role, 'is_pdf': True}
     return download_as_image('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.jpg')
+
+
+@login_required
+def bills_csv_export(request):
+    """CSV export for billing data."""
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="bills_report.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Bill ID', 'Patient', 'Hospital ID', 'Total Amount', 'Discount', 'Net Amount', 'Payment Method', 'Discount Type', 'Date', 'Status'])
+    for bill in Bill.objects.all().order_by('-created_at'):
+        writer.writerow([bill.bill_id, bill.patient.full_name, bill.patient.patient_id,
+                         bill.total_amount, bill.discount_amount, bill.net_amount,
+                         bill.payment_method, bill.discount_type,
+                         bill.created_at.strftime('%Y-%m-%d'), 'Paid' if bill.paid else 'Unpaid'])
+    return response

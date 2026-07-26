@@ -17,26 +17,88 @@
             <div class="d-grid gap-2">
                 <a href="/pharmacy/dispense/" class="btn btn-primary">Dispense Medicine</a>
                 <a href="/pharmacy/medicines/" class="btn btn-outline-primary">Medicine Catalogue</a>
+                <a href="/pharmacy/report/" class="btn btn-outline-secondary">Sales Report</a>
             </div>
         </div></div>
     </div>
 </div>
+
+<!-- Sales Chart -->
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="ti ti-chart-bar me-2"></i>Daily Sales (Last 7 Days)</h5></div>
+            <div class="card-body"><div id="pharmacyChart" style="height: 250px;"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats with Popup -->
 <div class="row row-cols-1 row-cols-xl-4 row-cols-md-4 mb-6 g-6">
     <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
-        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="M12 18a6 6 0 0 0 0-12"/></svg></div><div>Total Medicines</div></div>
-        <div class="fs-3 fw-bold">{{ total_medicines }}</div>
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="ti ti-pills fs-4"></i></div><div>Total Medicines</div></div>
+        <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ total_medicines }}</div><a href="/pharmacy/medicines/" class="text-muted small">Catalogue →</a></div>
     </div></div></div>
     <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
-        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/></svg></div><div>Low Stock</div></div>
-        <div class="fs-3 fw-bold">{{ low_stock }}</div>
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><i class="ti ti-alert-triangle fs-4"></i></div><div>Low Stock</div></div>
+        <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ low_stock }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#lowStockModal">Details →</a></div>
     </div></div></div>
     <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
-        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg></div><div>Out of Stock</div></div>
-        <div class="fs-3 fw-bold">{{ out_of_stock }}</div>
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><i class="ti ti-x fs-4"></i></div><div>Out of Stock</div></div>
+        <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ out_of_stock }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#outOfStockModal">Details →</a></div>
     </div></div></div>
     <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
-        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></div><div>Today Sales</div></div>
-        <div class="fs-3 fw-bold">{{ today_sales }}</div>
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><i class="ti ti-cash fs-4"></i></div><div>Today Sales</div></div>
+        <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ today_sales }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#todaySalesModal">Details →</a></div>
     </div></div></div>
 </div>
+
+<!-- Today Sales Modal -->
+<div class="modal fade" id="todaySalesModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Today's Pharmacy Sales</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body">
+            <p class="fw-bold mb-3">Total: {{ today_sales }}</p>
+            <div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Sale ID</th><th>Patient</th><th>Amount</th><th>Method</th><th>Time</th></tr></thead><tbody>
+                {% for s in today_sales_list %}<tr><td>{{ s.sale_id }}</td><td>{{ s.patient.full_name|default:"—" }}</td><td>NPR {{ s.final_amount }}</td><td>{{ s.payment_method }}</td><td>{{ s.sale_date|date:"H:i" }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-secondary">No sales today</td></tr>{% endfor %}
+            </tbody></table></div>
+        </div>
+    </div></div>
+</div>
+
+<!-- Low Stock Modal -->
+<div class="modal fade" id="lowStockModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Low Stock Medicines</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Code</th><th>Name</th><th>Current Stock</th><th>Minimum</th><th>Status</th></tr></thead><tbody>
+            {% for m in low_stock_list %}<tr><td>{{ m.code }}</td><td>{{ m.name }}</td><td class="text-warning fw-bold">{{ m.stock_quantity }}</td><td>{{ m.minimum_stock }}</td><td><span class="badge bg-warning-subtle">Low</span></td></tr>{% empty %}<tr><td colspan="5" class="text-center text-secondary">No low stock</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<!-- Out of Stock Modal -->
+<div class="modal fade" id="outOfStockModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Out of Stock Medicines</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Code</th><th>Name</th><th>Stock</th><th>Unit</th></tr></thead><tbody>
+            {% for m in out_of_stock_list %}<tr><td>{{ m.code }}</td><td>{{ m.name }}</td><td class="text-danger fw-bold">0</td><td>{{ m.unit }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-secondary">No out of stock</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof ApexCharts !== 'undefined' && document.getElementById('pharmacyChart')) {
+        new ApexCharts(document.getElementById('pharmacyChart'), {
+            series: [{name: 'Sales (NPR)', data: {{ chart_sales }}}],
+            chart: {type: 'bar', height: 250, fontFamily: 'inherit', toolbar: {show: false}},
+            plotOptions: {bar: {borderRadius: 4, columnWidth: '60%'}},
+            xaxis: {categories: {{ chart_days|safe }}},
+            yaxis: {title: {text: 'NPR'}, labels: {formatter: function(val) { return val >= 1000 ? (val/1000).toFixed(1)+'K' : val.toFixed(0); }}},
+            colors: ['#51cf66'],
+            grid: {borderColor: '#f1f1f1'}
+        }).render();
+    }
+});
+</script>
 {% endblock %}

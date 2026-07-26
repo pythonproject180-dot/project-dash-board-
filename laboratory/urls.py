@@ -10,4 +10,5 @@ urlpatterns = [
     path('report-jpg/<int:pk>/', views.lab_report_jpg, name='lab_report_jpg'),
     path('catalog/', views.lab_catalog_list, name='lab_catalog_list'),
     path('catalog/add/', views.lab_catalog_add, name='lab_catalog_add'),
+    path('csv/', views.lab_csv_export, name='lab_csv_export'),
 ]

@@ -7,4 +7,5 @@ urlpatterns = [
     path('medicines/add/', views.medicine_add, name='medicine_add'),
     path('dispense/', views.pharmacy_dispense, name='pharmacy_dispense'),
     path('report/', views.pharmacy_report, name='pharmacy_report'),
+    path('csv/', views.pharmacy_csv_export, name='pharmacy_csv_export'),
 ]

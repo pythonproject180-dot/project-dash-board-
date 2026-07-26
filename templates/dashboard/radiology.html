@@ -5,86 +5,96 @@
 <div class="row mb-6 g-6">
     <div class="col-xl-8 col-lg-6">
         <div class="bg-gradient-mixed p-8 py-10 rounded-3 p-lg-7">
-            <h1 class="fs-3">🩻 Radiology Dashboard</h1>
-            <p>Manage imaging requests, scheduling, and radiology reports.</p>
+            <h1 class="fs-3">📷 Radiology Dashboard</h1>
+            <p>Manage radiology requests, imaging, and reports.</p>
             <a href="/radiology/queue/" class="btn btn-dark">View Queue</a>
+            <a href="/radiology/search/" class="btn btn-outline-light">Search</a>
         </div>
     </div>
 </div>
-<div class="row row-cols-1 row-cols-xl-5 row-cols-md-3 mb-6 g-6">
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><i class="ti ti-file-plus fs-4"></i></div><div>Requested</div></div>
-                <div class="fs-3 fw-bold">{{ requested }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="ti ti-calendar fs-4"></i></div><div>Scheduled</div></div>
-                <div class="fs-3 fw-bold">{{ scheduled }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-primary-darker text-primary-lighter"><i class="ti ti-zap fs-4"></i></div><div>In Progress</div></div>
-                <div class="fs-3 fw-bold">{{ in_progress }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><i class="ti ti-check fs-4"></i></div><div>Completed Today</div></div>
-                <div class="fs-3 fw-bold">{{ completed_today }}</div>
-            </div>
-        </div>
-    </div>
-    <div class="col">
-        <div class="card card-lg">
-            <div class="card-body d-flex flex-column gap-8">
-                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><i class="ti ti-alert-circle fs-4"></i></div><div>Urgent</div></div>
-                <div class="fs-3 fw-bold">{{ urgent }}</div>
-            </div>
-        </div>
-    </div>
-</div>
+
+<!-- Chart -->
 <div class="row mb-6 g-6">
     <div class="col-12">
         <div class="card">
-            <div class="card-header d-flex justify-content-between align-items-center">
-                <h4 class="mb-0">Recent Radiology Requests</h4>
-                <div class="d-flex gap-2">
-                    <a href="/radiology/queue/" class="btn btn-primary"><i class="ti ti-list me-1"></i>Queue</a>
-                    <a href="/radiology/search/" class="btn btn-white"><i class="ti ti-search me-1"></i>Search</a>
-                </div>
-            </div>
-            <div class="card-body">
-                <div class="table-responsive">
-                    <table class="table table-hover">
-                        <thead><tr><th>Patient</th><th>Type</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
-                        <tbody>
-                            {% for req in recent %}
-                            <tr>
-                                <td><a href="/patients/detail/{{ req.patient.pk }}/">{{ req.patient.full_name }}</a></td>
-                                <td>{{ req.imaging_type }}</td>
-                                <td>{{ req.priority }}</td>
-                                <td><span class="badge bg-{% if req.status == 'requested' %}warning{% elif req.status == 'scheduled' %}info{% elif req.status == 'in_progress' %}primary{% else %}success{% endif %}-subtle">{{ req.status }}</span></td>
-                                <td>{{ req.completed_at|date:"Y-m-d"|default:req.created_at|date:"Y-m-d" }}</td>
-                                <td><a href="/radiology/request/{{ req.pk }}/" class="btn btn-sm btn-primary">View</a></td>
-                            </tr>
-                            {% empty %}
-                            <tr><td colspan="6" class="text-center text-secondary py-4">No radiology requests.</td></tr>
-                            {% endfor %}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+            <div class="card-header"><h5 class="mb-0"><i class="ti ti-chart-bar me-2"></i>Radiology Requests Per Day (Last 7 Days)</h5></div>
+            <div class="card-body"><div id="radChart" style="height: 250px;"></div></div>
         </div>
     </div>
 </div>
+
+<!-- Stats with Popup -->
+<div class="row row-cols-1 row-cols-xl-4 row-cols-md-2 mb-6 g-6">
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><i class="ti ti-clock fs-4"></i></div><div>Pending</div></div>
+            <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ pending }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#pendingModal">Details →</a></div>
+        </div></div>
+    </div>
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="ti ti-calendar fs-4"></i></div><div>Scheduled</div></div>
+            <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ scheduled }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#scheduledModal">Details →</a></div>
+        </div></div>
+    </div>
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><i class="ti ti-check fs-4"></i></div><div>Completed Today</div></div>
+            <div class="d-flex justify-content-between align-items-center lh-1"><div class="fs-3 fw-bold">{{ completed_today }}</div><a href="#" class="text-muted small" data-bs-toggle="modal" data-bs-target="#completedModal">Details →</a></div>
+        </div></div>
+    </div>
+    <div class="col">
+        <div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+            <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-primary-darker text-primary-lighter"><i class="ti ti-list fs-4"></i></div><div>Total</div></div>
+            <div class="fs-3 fw-bold">{{ total }}</div>
+        </div></div>
+    </div>
+</div>
+
+<!-- Pending Modal -->
+<div class="modal fade" id="pendingModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Pending Radiology Requests</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Patient</th><th>Type</th><th>Priority</th><th>Request ID</th><th>Time</th></tr></thead><tbody>
+            {% for r in pending_list %}<tr><td>{{ r.patient.full_name }}</td><td>{{ r.imaging_type }}</td><td>{{ r.priority }}</td><td>{{ r.request_id }}</td><td>{{ r.created_at|date:"H:i" }}</td></tr>{% empty %}<tr><td colspan="5" class="text-center text-secondary">No pending</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<!-- Scheduled Modal -->
+<div class="modal fade" id="scheduledModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Scheduled Radiology Requests</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Patient</th><th>Type</th><th>Request ID</th><th>Time</th></tr></thead><tbody>
+            {% for r in scheduled_list %}<tr><td>{{ r.patient.full_name }}</td><td>{{ r.imaging_type }}</td><td>{{ r.request_id }}</td><td>{{ r.created_at|date:"H:i" }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-secondary">No scheduled</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<!-- Completed Modal -->
+<div class="modal fade" id="completedModal" tabindex="-1">
+    <div class="modal-dialog modal-lg"><div class="modal-content">
+        <div class="modal-header"><h5 class="modal-title">Completed Today</h5><button type="button" class="btn-close" data-bs-dismiss="modal"></button></div>
+        <div class="modal-body"><div class="table-responsive"><table class="table table-hover"><thead class="table-light"><tr><th>Patient</th><th>Type</th><th>Findings</th><th>Time</th></tr></thead><tbody>
+            {% for r in completed_today_list %}<tr><td>{{ r.patient.full_name }}</td><td>{{ r.imaging_type }}</td><td>{{ r.findings|default:"—"|truncatewords:5 }}</td><td>{{ r.completed_at|date:"H:i"|default:"—" }}</td></tr>{% empty %}<tr><td colspan="4" class="text-center text-secondary">No completed today</td></tr>{% endfor %}
+        </tbody></table></div></div>
+    </div></div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    if (typeof ApexCharts !== 'undefined' && document.getElementById('radChart')) {
+        new ApexCharts(document.getElementById('radChart'), {
+            series: [{name: 'New Requests', type: 'column', data: {{ chart_new }}}, {name: 'Completed', type: 'line', data: {{ chart_completed }}}],
+            chart: {height: 250, type: 'line', fontFamily: 'inherit', toolbar: {show: false}},
+            stroke: {curve: 'smooth', width: [0, 3]},
+            plotOptions: {bar: {borderRadius: 4, columnWidth: '60%'}},
+            xaxis: {categories: {{ chart_days|safe }}},
+            colors: ['#f03e3e', '#51cf66'],
+            fill: {type: ['solid', 'solid'], opacity: [0.85, 1]},
+            grid: {borderColor: '#f1f1f1'}
+        }).render();
+    }
+});
+</script>
 {% endblock %}

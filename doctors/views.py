@@ -22,7 +22,7 @@ def fmt(amount):
 @login_required
 @doctor_required
 def doctor_dashboard(request):
-    """Doctor Dashboard — shows patients today/month/year stats, waiting queue, quota management."""
+    """Doctor Dashboard — shows patients today/month/year stats, waiting queue, quota management, popup modals, charts."""
     today = timezone.now().date()
     month_start = today.replace(day=1)
     year_start = today.replace(month=1, day=1)
@@ -34,22 +34,48 @@ def doctor_dashboard(request):
     patients_month = OPDVisit.objects.filter(doctor=doctor, visit_date__date__gte=month_start).count() if doctor else 0
     patients_year = OPDVisit.objects.filter(doctor=doctor, visit_date__date__gte=year_start).count() if doctor else 0
 
+    queue_count = OPDVisit.objects.filter(doctor=doctor, status='waiting').count() if doctor else 0
+    completed_count = OPDVisit.objects.filter(doctor=doctor, status='completed', visit_date__date=today).count() if doctor else 0
+
     queue = OPDVisit.objects.filter(doctor=doctor, status='waiting').order_by('token_number') if doctor else []
     completed = OPDVisit.objects.filter(doctor=doctor, status='completed').order_by('-visit_date')[:20] if doctor else []
+
+    # Popup data: waiting queue details
+    waiting_list = OPDVisit.objects.filter(doctor=doctor, status='waiting').select_related('patient', 'department').order_by('token_number')[:30] if doctor else []
+    # Popup data: completed today
+    completed_today_list = OPDVisit.objects.filter(doctor=doctor, status='completed', visit_date__date=today).select_related('patient', 'department').order_by('-visit_date')[:30] if doctor else []
+    # Popup data: all visits this month
+    month_visits = OPDVisit.objects.filter(doctor=doctor, visit_date__date__gte=month_start).select_related('patient', 'department').order_by('-visit_date')[:30] if doctor else []
 
     # Quota info
     quotas = DoctorQuota.objects.filter(doctor=doctor) if doctor else []
     today_quota = DoctorQuota.objects.filter(doctor=doctor, weekday=today.weekday(), is_active=True).first() if doctor else None
 
+    # Chart data: patients per day (last 7 days)
+    import datetime
+    chart_days = []
+    chart_patients = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_patients.append(OPDVisit.objects.filter(doctor=doctor, visit_date__date=d).count() if doctor else 0)
+
     context = {
         'doctor': doctor,
         'queue': queue,
         'completed': completed,
+        'queue_count': queue_count,
+        'completed_count': completed_count,
         'patients_today': patients_today,
         'patients_month': patients_month,
         'patients_year': patients_year,
         'quotas': quotas,
         'today_quota': today_quota,
+        'waiting_list': waiting_list,
+        'completed_today_list': completed_today_list,
+        'month_visits': month_visits,
+        'chart_days': chart_days,
+        'chart_patients': chart_patients,
         'role': 'doctor',
     }
     return render(request, 'dashboard/doctor.html', context)

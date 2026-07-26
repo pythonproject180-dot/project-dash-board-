@@ -16,4 +16,5 @@ urlpatterns = [
     path('opd-ticket-jpg/<int:pk>/', views.opd_ticket_jpg, name='opd_ticket_jpg'),
     path('bill-pdf/<int:pk>/', views.bill_receipt_pdf, name='bill_receipt_pdf'),
     path('bill-jpg/<int:pk>/', views.bill_receipt_jpg, name='bill_receipt_jpg'),
+    path('csv/', views.patients_csv_export, name='patients_csv_export'),
 ]

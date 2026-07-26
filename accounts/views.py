@@ -52,6 +52,7 @@ def super_admin_dashboard(request):
     from admissions.models import Admission
     from doctors.models import Doctor
     from departments.models import Department
+    from insurance.models import InsuranceClaim
 
     total_patients = Patient.objects.count()
     total_doctors = Doctor.objects.count()
@@ -59,12 +60,29 @@ def super_admin_dashboard(request):
     total_bills = Bill.objects.count()
     total_admissions = Admission.objects.filter(status='admitted').count()
     total_users = User.objects.filter(is_active_staff=True).count()
+    total_claims = InsuranceClaim.objects.count()
 
     today_collection = Bill.objects.filter(created_at__date=today).aggregate(total=Sum('net_amount'))['total'] or 0
     month_collection = Bill.objects.filter(created_at__date__gte=month_start).aggregate(total=Sum('net_amount'))['total'] or 0
     year_collection = Bill.objects.filter(created_at__date__gte=year_start).aggregate(total=Sum('net_amount'))['total'] or 0
 
     recent_logs = AuditLog.objects.all()[:20]
+
+    # Popup data for stat cards
+    today_bills_list = Bill.objects.filter(created_at__date=today).select_related('patient').order_by('-created_at')[:30]
+    today_patients_list = Patient.objects.filter(created_at__date=today).order_by('-created_at')[:30]
+    month_patients_list = Patient.objects.filter(created_at__date__gte=month_start).order_by('-created_at')[:30]
+
+    # Chart data: revenue per day (last 7 days)
+    import datetime
+    chart_days = []
+    chart_revenue = []
+    chart_registrations = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_revenue.append(float(Bill.objects.filter(created_at__date=d).aggregate(total=Sum('net_amount'))['total'] or 0))
+        chart_registrations.append(Patient.objects.filter(created_at__date=d).count())
 
     def fmt(amount):
         try:
@@ -81,6 +99,7 @@ def super_admin_dashboard(request):
         'total_bills': total_bills,
         'total_admissions': total_admissions,
         'total_users': total_users,
+        'total_claims': total_claims,
         'today_collection': fmt(today_collection),
         'today_collection_raw': today_collection,
         'month_collection': fmt(month_collection),
@@ -88,6 +107,12 @@ def super_admin_dashboard(request):
         'year_collection': fmt(year_collection),
         'year_collection_raw': year_collection,
         'recent_logs': recent_logs,
+        'today_bills_list': today_bills_list,
+        'today_patients_list': today_patients_list,
+        'month_patients_list': month_patients_list,
+        'chart_days': chart_days,
+        'chart_revenue': chart_revenue,
+        'chart_registrations': chart_registrations,
         'role': 'super_admin',
         'has_django_admin': True,
     }

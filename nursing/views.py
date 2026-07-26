@@ -12,8 +12,51 @@ from accounts.models import AuditLog
 @login_required
 @nursing_required
 def nursing_dashboard(request):
-    """Nursing Dashboard — search patient, view medical records, add notes."""
-    context = {'role': request.user.role}
+    """Nursing Dashboard — admitted patients, vitals, notes, with popup modals and chart data."""
+    from django.utils import timezone
+    from admissions.models import Admission
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
+
+    # Currently admitted patients (assigned to nursing)
+    assigned = Admission.objects.filter(status='admitted').select_related('patient', 'doctor', 'ward', 'bed').order_by('-admission_date')[:30]
+
+    # Stats
+    today_admissions = Admission.objects.filter(admission_date__date=today).count()
+    today_discharges = Admission.objects.filter(discharge_date__date=today).count() if hasattr(Admission, 'discharge_date') else 0
+    pending_notes = NursingNote.objects.filter(created_at__date=today).count()
+    total_notes = NursingNote.objects.count()
+
+    # Popup data: admitted patient details
+    admitted_list = Admission.objects.filter(status='admitted').select_related('patient', 'doctor', 'ward', 'bed').order_by('-admission_date')
+    # Popup data: today admissions
+    today_admission_list = Admission.objects.filter(admission_date__date=today).select_related('patient', 'doctor', 'ward', 'bed').order_by('-admission_date')
+    # Popup data: recent notes
+    recent_notes = NursingNote.objects.all().order_by('-created_at')[:20]
+
+    # Chart data: admissions per day (last 7 days)
+    from django.db.models import Count
+    import datetime
+    chart_days = []
+    chart_counts = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        chart_counts.append(Admission.objects.filter(admission_date__date=d).count())
+
+    context = {
+        'role': request.user.role,
+        'assigned': assigned,
+        'today_admissions': today_admissions,
+        'today_discharges': today_discharges,
+        'pending_notes': pending_notes,
+        'total_notes': total_notes,
+        'admitted_list': admitted_list,
+        'today_admission_list': today_admission_list,
+        'recent_notes': recent_notes,
+        'chart_days': chart_days,
+        'chart_counts': chart_counts,
+    }
     return render(request, 'dashboard/nursing.html', context)
 
 

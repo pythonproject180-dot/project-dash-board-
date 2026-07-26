@@ -21,7 +21,7 @@ def fmt(amount):
 @login_required
 @pharmacy_required
 def pharmacy_dashboard(request):
-    """Pharmacy Dashboard with sales stats."""
+    """Pharmacy Dashboard with sales stats, popup modals, and chart data."""
     today = timezone.now().date()
     month_start = today.replace(day=1)
     year_start = today.replace(month=1, day=1)
@@ -36,6 +36,21 @@ def pharmacy_dashboard(request):
 
     recent_sales = PharmacySale.objects.all().order_by('-sale_date')[:10]
 
+    # Popup data
+    today_sales_list = PharmacySale.objects.filter(sale_date__date=today).select_related('patient').order_by('-sale_date')[:30]
+    low_stock_list = Medicine.objects.filter(stock_quantity__lte=F('minimum_stock'), is_active=True).order_by('stock_quantity')
+    out_of_stock_list = Medicine.objects.filter(stock_quantity__lte=0, is_active=True).order_by('name')
+
+    # Chart data: daily sales (last 7 days)
+    import datetime
+    chart_days = []
+    chart_sales = []
+    for i in range(6, -1, -1):
+        d = today - datetime.timedelta(days=i)
+        chart_days.append(d.strftime('%a'))
+        amt = PharmacySale.objects.filter(sale_date__date=d).aggregate(total=Sum('final_amount'))['total'] or 0
+        chart_sales.append(float(amt))
+
     context = {
         'today_sales': fmt(today_sales), 'today_sales_raw': today_sales,
         'month_sales': fmt(month_sales), 'month_sales_raw': month_sales,
@@ -43,6 +58,11 @@ def pharmacy_dashboard(request):
         'total_medicines': total_medicines,
         'low_stock': low_stock, 'out_of_stock': out_of_stock,
         'recent_sales': recent_sales,
+        'today_sales_list': today_sales_list,
+        'low_stock_list': low_stock_list,
+        'out_of_stock_list': out_of_stock_list,
+        'chart_days': chart_days,
+        'chart_sales': chart_sales,
         'role': request.user.role,
     }
     return render(request, 'dashboard/pharmacy.html', context)
@@ -169,3 +189,19 @@ def pharmacy_report(request):
         'role': request.user.role,
     }
     return render(request, 'dashboard/pharmacy_report.html', context)
+
+
+@login_required
+def pharmacy_csv_export(request):
+    """CSV export for pharmacy sales data."""
+    import csv
+    from django.http import HttpResponse
+    response = HttpResponse(content_type='text/csv')
+    response['Content-Disposition'] = 'attachment; filename="pharmacy_sales.csv"'
+    writer = csv.writer(response)
+    writer.writerow(['Sale ID', 'Patient', 'Total Amount', 'Discount', 'Final Amount', 'Payment Method', 'Date'])
+    for sale in PharmacySale.objects.all().order_by('-sale_date'):
+        writer.writerow([sale.sale_id, sale.patient.full_name if sale.patient else '—',
+                         sale.total_amount, sale.discount, sale.final_amount,
+                         sale.payment_method, sale.sale_date.strftime('%Y-%m-%d')])
+    return response
