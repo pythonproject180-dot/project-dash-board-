@@ -261,7 +261,7 @@ def bill_receipt_pdf_view(request, pk):
     bill = get_object_or_404(Bill, pk=pk)
     items = BillItem.objects.filter(bill=bill)
     context = {'bill': bill, 'items': items, 'role': request.user.role, 'is_pdf': True}
-    return download_as_pdf('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.pdf')
+    return download_as_pdf('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.pdf', request=request)
 
 
 @login_required
@@ -270,7 +270,7 @@ def bill_receipt_jpg_view(request, pk):
     bill = get_object_or_404(Bill, pk=pk)
     items = BillItem.objects.filter(bill=bill)
     context = {'bill': bill, 'items': items, 'role': request.user.role, 'is_pdf': True}
-    return download_as_image('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.jpg')
+    return download_as_image('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.jpg', request=request)
 
 
 @login_required

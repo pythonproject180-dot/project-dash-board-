@@ -221,7 +221,7 @@ def discharge_summary_pdf(request, pk):
     discharge = get_object_or_404(DischargeSummary, pk=pk)
     context = {'discharge': discharge, 'role': request.user.role, 'is_pdf': True}
     return download_as_pdf('dashboard/discharge_summary_print.html', context,
-                           filename=f'DischargeSummary-{discharge.patient.patient_id}.pdf')
+                           filename=f'DischargeSummary-{discharge.patient.patient_id}.pdf', request=request)
 
 
 @login_required
@@ -230,4 +230,4 @@ def discharge_summary_jpg(request, pk):
     discharge = get_object_or_404(DischargeSummary, pk=pk)
     context = {'discharge': discharge, 'role': request.user.role, 'is_pdf': True}
     return download_as_image('dashboard/discharge_summary_print.html', context,
-                             filename=f'DischargeSummary-{discharge.patient.patient_id}.jpg')
+                             filename=f'DischargeSummary-{discharge.patient.patient_id}.jpg', request=request)

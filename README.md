@@ -14,18 +14,22 @@ Hamro Hospital is a professional, production-ready Hospital Management System de
 - **71 Dashboard Templates** (Dasher design) with role-based sidebar
 - **10 Website Templates** (NexusAI design) with Light/Dark/Auto theme
 - **4 Patient Portal Templates** (signup/login/dashboard/forgot-password)
-- **Sample Patient Data** — 10 patients with OPD visits, bills, lab/radiology requests, pharmacy, admissions, insurance, consultations, medical records
+- **3 eSewa Payment Templates** (initiate/success/failure)
+- **Expanded Seed Data** — 100 medicines, 40 services, 40 lab catalog, 24 radiology catalog, 22 patients, 20 OPD visits, 17 bills, 16 lab requests, 14 radiology requests, 10+ consultations, 15 pharmacy sales, 16 admissions, 10 discharge summaries, 17 nursing notes, 57 medical records, 13 insurance claims, 10 surgeries, 10 blood requests, 10 appointments, 15 doctors
 - **Patient QR Codes** — one permanent QR per patient, scanned across all departments
 - **Barcodes** — separate barcodes for Bills, Admissions, Lab, Radiology, Pharmacy, Insurance
-- **Print/PDF/JPG** downloads on all printable documents
+- **Print/PDF/JPG** downloads on all printable documents (OPD Ticket, Bill Receipt, Patient Card, Discharge Summary, Insurance Claim, Lab/Radiology Reports)
 - **Medical Record Automation** — all department reports auto-attach to centralized medical record
 - **Nepal Localization** — Provinces, Districts, Municipalities, NPR currency, Lakh/Crore notation
 - **Doctor Quota System** — limits daily OPD bookings per doctor per weekday
 - **Registration Fee** — New Patient: NPR 100, Old Patient: NPR 50
-- **Payment Methods** — Cash (default) and eSewa
+- **Payment Methods** — Cash (default) and eSewa (with full payment flow)
+- **eSewa Payment Gateway** — HMAC-SHA256 signature, test environment (EPAYTEST), production via env vars
+- **SMS OTP Gateway** — 4 providers: Sparrow SMS (Nepal), Vasani (Nepal), Twilio (International), Simulated (Dev)
 - **Smart Search Autocomplete** — type "X" shows X-Ray, "E" shows ECG, "U" shows Ultrasound
-- **Popup Modals** — stat cards open popup modals with detailed drill-down data
-- **CSV Export** — revenue data exported as CSV
+- **Popup Modals** — stat cards open popup modals with detailed drill-down data on all 14 dashboards
+- **ApexCharts Graphs** — 7-day trend data on all 14 dashboards
+- **CSV Export** — 5 modules: patients, billing, lab, pharmacy, revenue
 - **Department Drill-down** — accounts dashboard shows transaction details per department
 
 ---
@@ -44,6 +48,8 @@ Hamro Hospital is a professional, production-ready Hospital Management System de
 | PDF Generation | xhtml2pdf |
 | Barcode | python-barcode (Code128) |
 | QR Code | qrcode + Pillow |
+| Payment Gateway | eSewa (HMAC-SHA256) |
+| SMS Gateway | Sparrow SMS / Vasani / Twilio |
 | Icons | FontAwesome, Tabler Icons |
 
 ---

@@ -337,7 +337,7 @@ def patient_card_pdf(request, pk):
     patient = get_object_or_404(Patient, pk=pk)
     size = request.GET.get('size', 'id')
     context = {'patient': patient, 'role': request.user.role, 'size': size, 'is_pdf': True}
-    return download_as_pdf('dashboard/patient_card.html', context, filename=f'PatientCard-{patient.patient_id}.pdf')
+    return download_as_pdf('dashboard/patient_card.html', context, filename=f'PatientCard-{patient.patient_id}.pdf', request=request)
 
 
 @login_required
@@ -348,7 +348,7 @@ def patient_card_jpg(request, pk):
     patient = get_object_or_404(Patient, pk=pk)
     size = request.GET.get('size', 'id')
     context = {'patient': patient, 'role': request.user.role, 'size': size, 'is_pdf': True}
-    return download_as_image('dashboard/patient_card.html', context, filename=f'PatientCard-{patient.patient_id}.jpg')
+    return download_as_image('dashboard/patient_card.html', context, filename=f'PatientCard-{patient.patient_id}.jpg', request=request)
 
 
 @login_required
@@ -357,7 +357,7 @@ def opd_ticket_pdf(request, pk):
     visit = get_object_or_404(OPDVisit, pk=pk)
     patient = visit.patient
     context = {'patient': patient, 'visit': visit, 'role': request.user.role, 'is_pdf': True}
-    return download_as_pdf('dashboard/opd_ticket.html', context, filename=f'OPD-Ticket-{patient.patient_id}.pdf')
+    return download_as_pdf('dashboard/opd_ticket.html', context, filename=f'OPD-Ticket-{patient.patient_id}.pdf', request=request)
 
 
 @login_required
@@ -366,7 +366,7 @@ def opd_ticket_jpg(request, pk):
     visit = get_object_or_404(OPDVisit, pk=pk)
     patient = visit.patient
     context = {'patient': patient, 'visit': visit, 'role': request.user.role, 'is_pdf': True}
-    return download_as_image('dashboard/opd_ticket.html', context, filename=f'OPD-Ticket-{patient.patient_id}.jpg')
+    return download_as_image('dashboard/opd_ticket.html', context, filename=f'OPD-Ticket-{patient.patient_id}.jpg', request=request)
 
 
 @login_required
@@ -375,7 +375,7 @@ def bill_receipt_pdf(request, pk):
     from billing.models import Bill
     bill = get_object_or_404(Bill, pk=pk)
     context = {'bill': bill, 'role': request.user.role, 'is_pdf': True}
-    return download_as_pdf('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.pdf')
+    return download_as_pdf('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.pdf', request=request)
 
 
 @login_required
@@ -384,7 +384,7 @@ def bill_receipt_jpg(request, pk):
     from billing.models import Bill
     bill = get_object_or_404(Bill, pk=pk)
     context = {'bill': bill, 'role': request.user.role, 'is_pdf': True}
-    return download_as_image('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.jpg')
+    return download_as_image('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.jpg', request=request)
 
 
 @login_required

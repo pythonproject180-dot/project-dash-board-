@@ -6,12 +6,17 @@ import io
 from PIL import Image
 
 
-def render_to_pdf(template_src, context_dict=None):
+def render_to_pdf(template_src, context_dict=None, request=None):
     """Render a Django template to PDF."""
     if context_dict is None:
         context_dict = {}
     template = get_template(template_src)
-    html = template.render(context_dict)
+    if request:
+        # Use RequestContext to include all context processors (user, role, etc.)
+        from django.template import RequestContext
+        html = template.render(context_dict, request)
+    else:
+        html = template.render(context_dict)
     result = io.BytesIO()
     pdf = pisa.pisaDocument(io.BytesIO(html.encode('UTF-8')), result)
     if not pdf.err:
@@ -19,16 +24,16 @@ def render_to_pdf(template_src, context_dict=None):
     return None
 
 
-def download_as_pdf(template_src, context_dict, filename='document.pdf'):
+def download_as_pdf(template_src, context_dict, filename='document.pdf', request=None):
     """Generate PDF and return as downloadable response."""
-    pdf_response = render_to_pdf(template_src, context_dict)
+    pdf_response = render_to_pdf(template_src, context_dict, request=request)
     if pdf_response:
         pdf_response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return pdf_response
     return HttpResponse('Error generating PDF', status=500)
 
 
-def render_to_image(template_src, context_dict=None, width=800, format='JPEG'):
+def render_to_image(template_src, context_dict=None, request=None, width=800, format='JPEG'):
     """Render a Django template to an image (JPG/PNG) for download.
     Uses Pillow to convert the HTML-rendered content into an image.
     Note: For production-quality HTML-to-image, consider using html2image or wkhtmltoimage.
@@ -37,7 +42,11 @@ def render_to_image(template_src, context_dict=None, width=800, format='JPEG'):
     if context_dict is None:
         context_dict = {}
     template = get_template(template_src)
-    html = template.render(context_dict)
+    if request:
+        from django.template import RequestContext
+        html = template.render(context_dict, request)
+    else:
+        html = template.render(context_dict)
 
     # Create a simple image representation
     img = Image.new('RGB', (width, 1200), color=(255, 255, 255))
@@ -61,9 +70,9 @@ def render_to_image(template_src, context_dict=None, width=800, format='JPEG'):
     return HttpResponse(buf.getvalue(), content_type=content_type)
 
 
-def download_as_image(template_src, context_dict, filename='document.jpg', width=800, format='JPEG'):
+def download_as_image(template_src, context_dict, filename='document.jpg', request=None, width=800, format='JPEG'):
     """Generate an image and return as downloadable response."""
-    img_response = render_to_image(template_src, context_dict, width, format)
+    img_response = render_to_image(template_src, context_dict, request=request, width=width, format=format)
     if img_response:
         img_response['Content-Disposition'] = f'attachment; filename="{filename}"'
         return img_response

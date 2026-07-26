@@ -145,7 +145,7 @@ def lab_report_pdf(request, pk):
     lab = get_object_or_404(LabTestRequest, pk=pk)
     context = {'lab_request': lab, 'role': request.user.role, 'is_pdf': True}
     return download_as_pdf('dashboard/lab_request_detail.html', context,
-                           filename=f'LabReport-{lab.patient.patient_id}.pdf')
+                           filename=f'LabReport-{lab.patient.patient_id}.pdf', request=request)
 
 
 @login_required
@@ -154,7 +154,7 @@ def lab_report_jpg(request, pk):
     lab = get_object_or_404(LabTestRequest, pk=pk)
     context = {'lab_request': lab, 'role': request.user.role, 'is_pdf': True}
     return download_as_image('dashboard/lab_request_detail.html', context,
-                              filename=f'LabReport-{lab.patient.patient_id}.jpg')
+                              filename=f'LabReport-{lab.patient.patient_id}.jpg', request=request)
 
 
 @login_required

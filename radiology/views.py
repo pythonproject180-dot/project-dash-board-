@@ -145,7 +145,7 @@ def radiology_report_pdf(request, pk):
     rad = get_object_or_404(RadiologyRequest, pk=pk)
     context = {'rad_request': rad, 'role': request.user.role, 'is_pdf': True}
     return download_as_pdf('dashboard/radiology_request_detail.html', context,
-                           filename=f'RadiologyReport-{rad.patient.patient_id}.pdf')
+                           filename=f'RadiologyReport-{rad.patient.patient_id}.pdf', request=request)
 
 
 @login_required
@@ -154,7 +154,7 @@ def radiology_report_jpg(request, pk):
     rad = get_object_or_404(RadiologyRequest, pk=pk)
     context = {'rad_request': rad, 'role': request.user.role, 'is_pdf': True}
     return download_as_image('dashboard/radiology_request_detail.html', context,
-                              filename=f'RadiologyReport-{rad.patient.patient_id}.jpg')
+                              filename=f'RadiologyReport-{rad.patient.patient_id}.jpg', request=request)
 
 
 @login_required

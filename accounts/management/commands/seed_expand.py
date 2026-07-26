@@ -599,4 +599,153 @@ class Command(BaseCommand):
                 DiseaseInfo.objects.create(name=name, description=desc, is_active=True)
         self.stdout.write(f'  Disease Info total: {DiseaseInfo.objects.count()}\n')
 
+        # ===== 23. EXPAND TO 10+ — ADD MORE WARDS =====
+        self.stdout.write('Adding more wards to reach 10+...\n')
+        extra_wards = [
+            ('General Ward B', 'General Medicine', 2),
+            ('Surgical Ward B', 'Surgery', 2),
+            ('Pediatric Ward B', 'Pediatrics', 3),
+            ('Oncology Ward', 'Oncology', 4),
+        ]
+        for wname, dept_name, floor in extra_wards:
+            dept = Department.objects.filter(name__icontains=dept_name).first()
+            if not Ward.objects.filter(name=wname).exists():
+                w = Ward.objects.create(name=wname, department=dept, floor=floor, is_active=True)
+                for bn in range(1, 9):
+                    Bed.objects.create(ward=w, bed_number=f'{wname[:3].upper()}-{bn:02d}', is_occupied=False, bed_type='general')
+        self.stdout.write(f'  Wards total: {Ward.objects.count()}\n')
+        self.stdout.write(f'  Beds total: {Bed.objects.count()}\n')
+
+        # ===== 24. EXPAND TO 10+ — ADD MORE ADMISSSIONS =====
+        self.stdout.write('Adding more admissions to reach 10+...\n')
+        all_patients = list(Patient.objects.all())
+        doctors = list(Doctor.objects.all())
+        wards = list(Ward.objects.filter(is_active=True))
+        admin_user = User.objects.filter(role='admission').first() or User.objects.filter(is_superuser=True).first()
+        current_admissions = Admission.objects.count()
+        needed_admissions = max(0, 12 - current_admissions)
+        for i in range(needed_admissions):
+            p = all_patients[i % len(all_patients)]
+            doc = doctors[i % len(doctors)]
+            ward = wards[i % len(wards)]
+            bed = Bed.objects.filter(ward=ward, is_occupied=False).first()
+            if bed:
+                bed.is_occupied = True
+                bed.save()
+            diagnoses = ['Acute Appendicitis', 'Pneumonia', 'Fracture - Femur', 'Acute Kidney Injury',
+                         'Severe Anemia', 'Severe Pneumonia', 'Acute Pancreatitis', 'Traumatic Brain Injury', 'Septicemia']
+            Admission.objects.create(
+                patient=p, doctor=doc, ward=ward, bed=bed,
+                diagnosis=diagnoses[i % len(diagnoses)],
+                treatment='Admitted for observation and treatment',
+                status='admitted',
+                admission_fee=random.choice([500, 1000, 1500, 2000]),
+                created_by=admin_user,
+            )
+        self.stdout.write(f'  Admissions total: {Admission.objects.count()}\n')
+
+        # ===== 25. EXPAND TO 10+ — DISCHARGE MORE + CREATE DISCHARGE SUMMARIES =====
+        self.stdout.write('Discharging admissions to create discharge summaries (target: 10+)...\n')
+        admitted = list(Admission.objects.filter(status='admitted'))
+        needed_discharges = max(0, 7 - DischargeSummary.objects.count())
+        conditions = ['improved', 'improved', 'stable', 'improved', 'stable', 'improved', 'improved']
+        for i, adm in enumerate(admitted[:needed_discharges]):
+            adm.status = 'discharged'
+            adm.discharge_date = timezone.now() - timedelta(days=random.randint(1, 5))
+            adm.save()
+            if adm.bed:
+                adm.bed.is_occupied = False
+                adm.bed.save()
+            if not DischargeSummary.objects.filter(admission=adm).exists():
+                DischargeSummary.objects.create(
+                    admission=adm, patient=adm.patient,
+                    attending_doctor=adm.doctor,
+                    admission_diagnosis=adm.diagnosis,
+                    final_diagnosis=adm.diagnosis,
+                    chief_complaint='Presenting symptoms on admission',
+                    history_of_present_illness=f'Patient presented with {adm.diagnosis}. History documented.',
+                    examination_findings='General examination: conscious, oriented. Vitals stable.',
+                    investigations='Relevant lab and imaging investigations completed.',
+                    treatment_given='Treatment administered as per protocol. Patient responded well.',
+                    condition_at_discharge=conditions[i % len(conditions)],
+                    discharge_instructions='Continue medication, follow-up in 7 days, avoid strenuous activity',
+                    follow_up_date=today + timedelta(days=7),
+                    follow_up_instructions='Follow-up in OPD, bring all reports',
+                    medications_at_discharge='Continue prescribed medications for 2 weeks',
+                    prepared_by=admin_user,
+                )
+        # Also ensure at least 6 active admissions remain
+        remaining_active = Admission.objects.filter(status='admitted').count()
+        if remaining_active < 6:
+            for i in range(6 - remaining_active):
+                p = all_patients[i % len(all_patients)]
+                doc = doctors[i % len(doctors)]
+                ward = wards[i % len(wards)]
+                bed = Bed.objects.filter(ward=ward, is_occupied=False).first()
+                if bed:
+                    bed.is_occupied = True
+                    bed.save()
+                Admission.objects.create(
+                    patient=p, doctor=doc, ward=ward, bed=bed,
+                    diagnosis=random.choice(['Severe Pneumonia', 'Acute Pancreatitis', 'Traumatic Brain Injury', 'Septicemia']),
+                    treatment='Admitted for observation and treatment',
+                    status='admitted',
+                    admission_fee=random.choice([500, 1000, 1500, 2000]),
+                    created_by=admin_user,
+                )
+        self.stdout.write(f'  Discharge Summaries total: {DischargeSummary.objects.count()}\n')
+        self.stdout.write(f'  Active admissions: {Admission.objects.filter(status=\"admitted\").count()}\n')
+        self.stdout.write(f'  Discharged admissions: {Admission.objects.filter(status=\"discharged\").count()}\n')
+
+        # ===== 26. EXPAND TO 10+ — ADD MORE NURSING NOTES =====
+        self.stdout.write('Adding more nursing notes (target: 10+)...\n')
+        nurse = User.objects.filter(role='nursing').first()
+        current_notes = NursingNote.objects.count()
+        needed_notes = max(0, 12 - current_notes)
+        admitted_now = list(Admission.objects.filter(status='admitted'))
+        discharged_now = list(Admission.objects.filter(status='discharged'))
+        note_count = 0
+        for adm in admitted_now[:3]:
+            p = adm.patient
+            for j in range(2):
+                if note_count < needed_notes:
+                    NursingNote.objects.create(
+                        patient=p,
+                        note_type=random.choice(['nursing_note', 'vital_signs', 'progress', 'medication_admin', 'observation']),
+                        content=f'Patient {p.full_name} - {random.choice(["Vitals stable", "Condition improving", "Medication administered", "Patient comfortable", "Wound healing well"])}. BP: {random.randint(100,140)}/{random.randint(60,90)}, Temp: {random.randint(96,101)}°F, Pulse: {random.randint(60,90)} bpm',
+                        vital_bp=f'{random.randint(100,140)}/{random.randint(60,90)}',
+                        vital_temp=f'{random.randint(96,101)}°F',
+                        vital_pulse=str(random.randint(60, 90)),
+                        vital_resp=str(random.randint(12, 20)),
+                        created_by=nurse,
+                    )
+                    note_count += 1
+        for adm in discharged_now[:3]:
+            p = adm.patient
+            if note_count < needed_notes:
+                NursingNote.objects.create(
+                    patient=p,
+                    note_type='nursing_note',
+                    content=f'Discharge note for {p.full_name}. Patient educated on discharge instructions.',
+                    created_by=nurse,
+                )
+                note_count += 1
+        self.stdout.write(f'  Nursing Notes total: {NursingNote.objects.count()}\n')
+
+        # ===== 27. EXPAND TO 10+ — ADD MORE MEDICAL RECORDS =====
+        self.stdout.write('Adding more medical records (target: 10+)...\n')
+        for p in all_patients[:15]:
+            for rtype in ['lab_report', 'radiology_report', 'admission_record']:
+                if MedicalRecord.objects.filter(patient=p, record_type=rtype).count() < 1:
+                    MedicalRecord.objects.create(
+                        patient=p,
+                        department=rtype.split('_')[0],
+                        record_type=rtype,
+                        title=f'{rtype.replace("_"," ").title()} - {p.patient_id}',
+                        summary=f'Auto-attached {rtype} record for patient {p.full_name}',
+                        uploaded_by='system',
+                        staff_name='Hamro Hospital System',
+                    )
+        self.stdout.write(f'  Medical Records total: {MedicalRecord.objects.count()}\n')
+
         self.stdout.write('\n=== SEED EXPANSION COMPLETE ===\n')

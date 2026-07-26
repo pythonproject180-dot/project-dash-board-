@@ -205,7 +205,7 @@ def claim_receipt_pdf(request, pk):
         'coverage_pct': coverage_pct, 'discount_amount': discount_amount,
         'remaining': remaining, 'role': request.user.role, 'is_pdf': True,
     }
-    return download_as_pdf('dashboard/claim_receipt.html', context, filename=f'Insurance-{claim.claim_id}.pdf')
+    return download_as_pdf('dashboard/claim_receipt.html', context, filename=f'Insurance-{claim.claim_id}.pdf', request=request)
 
 
 @login_required
@@ -221,7 +221,7 @@ def claim_receipt_jpg(request, pk):
         'coverage_pct': coverage_pct, 'discount_amount': discount_amount,
         'remaining': remaining, 'role': request.user.role, 'is_pdf': True,
     }
-    return download_as_image('dashboard/claim_receipt.html', context, filename=f'Insurance-{claim.claim_id}.jpg')
+    return download_as_image('dashboard/claim_receipt.html', context, filename=f'Insurance-{claim.claim_id}.jpg', request=request)
 
 
 @login_required
