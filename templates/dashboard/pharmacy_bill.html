@@ -1,0 +1,55 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Pharmacy Bill - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/pharmacy/">Pharmacy</a></li><li class="breadcrumb-item active">Bill</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Pharmacy Sale — {{ sale.sale_id }}</h4>
+                <div class="d-flex gap-2">
+                    <button onclick="window.print()" class="btn btn-white"><i class="ti ti-printer me-1"></i>Print</button>
+                    <a href="/pharmacy/" class="btn btn-primary"><i class="ti ti-arrow-left me-1"></i>Return to Pharmacy</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><strong>Sale ID:</strong> {{ sale.sale_id }}</div>
+                    <div class="col-md-4"><strong>Patient:</strong> {% if sale.patient %}<a href="/patients/detail/{{ sale.patient.pk }}/">{{ sale.patient.full_name }}</a>{% else %}No Patient{% endif %}</div>
+                    <div class="col-md-4"><strong>Date:</strong> {{ sale.sale_date|date:"Y-m-d H:i" }}</div>
+                    <div class="col-md-4"><strong>Payment:</strong> {{ sale.payment_method }}</div>
+                    <div class="col-md-4"><strong>Staff:</strong> {{ sale.counter_staff|default:"—" }}</div>
+                </div>
+                {% if sale.barcode %}
+                <div class="mb-3"><img src="{{ sale.barcode.url }}" alt="Barcode" style="max-height:50px"/></div>
+                {% endif %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Medicine</th><th>Qty</th><th>Price</th><th>Total</th></tr></thead>
+                        <tbody>
+                            {% for item in sale.items.all %}
+                            <tr>
+                                <td>{{ item.medicine.name }}</td>
+                                <td>{{ item.quantity }}</td>
+                                <td>Rs. {{ item.price_at_sale }}</td>
+                                <td>Rs. {{ item.total }}</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="d-flex justify-content-end">
+                    <div class="card bg-dark text-white" style="width:250px">
+                        <div class="card-body">
+                            <div class="d-flex justify-content-between"><span>Total:</span><span>Rs. {{ sale.total_amount }}</span></div>
+                            <div class="d-flex justify-content-between"><span>Discount:</span><span>Rs. {{ sale.discount }}</span></div>
+                            <hr style="border-color:rgba(255,255,255,.3)"/>
+                            <div class="d-flex justify-content-between fs-5 fw-bold"><span>Final:</span><span>Rs. {{ sale.final_amount }}</span></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

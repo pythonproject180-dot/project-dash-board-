@@ -1,0 +1,70 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Add Staff - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/accounts/dashboard/super-admin/">Super Admin</a></li><li class="breadcrumb-item"><a href="/accounts/staff/">Staff</a></li><li class="breadcrumb-item active">Add Staff</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header">
+                <h4 class="mb-0">Add New Staff Member</h4>
+            </div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">First Name</label>
+                            <input type="text" class="form-control" name="first_name" required/>
+                            <div class="invalid-feedback">Please enter first name.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Last Name</label>
+                            <input type="text" class="form-control" name="last_name" required/>
+                            <div class="invalid-feedback">Please enter last name.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Username</label>
+                            <input type="text" class="form-control" name="username" required/>
+                            <div class="invalid-feedback">Please enter username.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Password</label>
+                            <input type="password" class="form-control" name="password" required/>
+                            <div class="invalid-feedback">Please enter password.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Role</label>
+                            <select class="form-select" name="role" required>
+                                <option value="">Select Role</option>
+                                <option value="super_admin">Super Admin</option>
+                                <option value="registration">Registration Counter</option>
+                                <option value="cash_counter">Cash Counter</option>
+                                <option value="doctor">Doctor</option>
+                                <option value="pharmacy">Pharmacy</option>
+                                <option value="laboratory">Laboratory</option>
+                                <option value="radiology">Radiology Counter</option>
+                                <option value="insurance">Insurance Counter</option>
+                                <option value="admission">Ward/Admission</option>
+                                <option value="nursing">Nursing</option>
+                                <option value="operation_theatre">Operation Theatre</option>
+                                <option value="blood_bank">Blood Bank</option>
+                                <option value="accounts">Accounts Department</option>
+                                <option value="medical_records">Medical Records</option>
+                            </select>
+                            <div class="invalid-feedback">Please select a role.</div>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Phone</label>
+                            <input type="text" class="form-control" name="phone"/>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-user-plus me-1"></i>Create Staff</button>
+                            <a href="/accounts/staff/" class="btn btn-white ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

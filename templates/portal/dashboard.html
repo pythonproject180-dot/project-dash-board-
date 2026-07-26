@@ -1,0 +1,260 @@
+<!DOCTYPE html><html lang="en" data-bs-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Patient Dashboard - Hamro Hospital</title>
+<link href="/static/css/bootstrap.min.css" rel="stylesheet"/><link href="/static/css/all.min.css" rel="stylesheet"/><link href="/static/css/style.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<style>
+.pcard{background:var(--gc);border-radius:16px;padding:20px;margin-bottom:16px;transition:transform .2s}
+.pcard:hover{transform:translateY(-2px)}
+.stat-box{text-align:center;padding:24px 12px;background:var(--gc);border-radius:12px}
+.stat-box .num{font-size:2rem;font-weight:700;color:var(--pur)}
+.stat-box .lbl{font-size:.8rem;color:var(--tx3);margin-top:4px}
+.tab-btn{padding:8px 16px;border-radius:8px;font-weight:500;border:none;background:transparent;color:var(--tx2);cursor:pointer}
+.tab-btn.active{background:var(--pur);color:#fff}
+.tab-btn:hover:not(.active){background:var(--bd)}
+.section-title{font-weight:700;font-size:1.1rem;margin-bottom:12px;color:var(--pur)}
+.record-item{padding:12px 0;border-bottom:1px solid var(--bd)}
+.record-item:last-child{border-bottom:none}
+.badge-sm{font-size:.65rem;padding:3px 8px;border-radius:6px;font-weight:600}
+.bg-waiting{background:#ffc107;color:#000}
+.bg-completed{background:#198754;color:#fff}
+.bg-pending{background:#fd7e14;color:#fff}
+.bg-progress{background:#0dcaf0;color:#000}
+.bg-approved{background:#198754;color:#fff}
+.bg-admitted{background:#0d6efd;color:#fff}
+.bg-discharged{background:#6c757d;color:#fff}
+</style>
+</head><body><div id="landing">
+<nav id="nbar"><div class="container"><div class="d-flex align-items-center justify-content-between w-100">
+<a href="/" class="d-flex align-items-center gap-2" style="font-size:1.2rem;font-weight:700"><div class="logo-i"><i class="fa-solid fa-hospital"></i></div><span>Hamro Hospital</span></a>
+<div style="font-weight:600;color:var(--pur)"><i class="fa-solid fa-user me-1"></i> {{ patient.full_name }} — {{ patient.patient_id }}</div>
+<a href="/portal/logout/" class="btn boc px-3 py-2" style="border-radius:12px"><i class="fa-solid fa-sign-out-alt me-1"></i>Logout</a>
+</div></div></nav>
+
+<section style="padding:30px 0"><div class="container">
+
+<!-- Patient Profile Card -->
+<div class="pcard">
+<div class="d-flex justify-content-between align-items-start">
+<div>
+<h3 style="font-weight:700;margin-bottom:4px">{{ patient.full_name }}</h3>
+<div style="color:var(--tx2);font-size:.9rem">
+<span><i class="fa-solid fa-id-card me-1"></i>{{ patient.patient_id }}</span> |
+<span>{{ patient.age_display }}</span> |
+<span>{{ patient.gender }}</span>
+{% if patient.blood_group %} | <span style="color:#dc3545;font-weight:600"><i class="fa-solid fa-droplet me-1"></i>{{ patient.blood_group }}</span>{% endif %}
+</div>
+<div style="color:var(--tx2);font-size:.85rem;margin-top:4px">
+<span><i class="fa-solid fa-phone me-1"></i>{{ patient.phone }}</span>
+{% if patient.email %} | <span><i class="fa-solid fa-envelope me-1"></i>{{ patient.email }}</span>{% endif %}
+</div>
+{% if patient.emergency_contact_name %}
+<div style="font-size:.8rem;margin-top:6px;color:var(--tx3)"><i class="fa-solid fa-exclamation-triangle me-1"></i>Emergency: {{ patient.emergency_contact_name }} ({{ patient.emergency_contact_relation }}) — {{ patient.emergency_contact_phone }}</div>
+{% endif %}
+</div>
+{% if patient.qr_code %}
+<div style="width:80px"><img src="{{ patient.qr_code.url }}" style="width:80px;border-radius:4px" alt="QR Code"/></div>
+{% endif %}
+</div>
+</div>
+
+<!-- Stats Row -->
+<div class="row g-3 mb-4">
+<div class="col-md-3"><div class="stat-box"><div class="num">{{ visits|length }}</div><div class="lbl">OPD Visits</div></div></div>
+<div class="col-md-3"><div class="stat-box"><div class="num">{{ lab_results|length }}</div><div class="lbl">Lab Reports</div></div></div>
+<div class="col-md-3"><div class="stat-box"><div class="num">{{ bills|length }}</div><div class="lbl">Bills</div></div></div>
+<div class="col-md-3"><div class="stat-box"><div class="num">{{ admissions|length }}</div><div class="lbl">Admissions</div></div></div>
+</div>
+
+<!-- Tab Navigation -->
+<div class="d-flex gap-2 mb-4 flex-wrap">
+<button class="tab-btn active" onclick="showTab('visits')"><i class="fa-solid fa-stethoscope me-1"></i>Visits</button>
+<button class="tab-btn" onclick="showTab('lab')"><i class="fa-solid fa-flask me-1"></i>Lab Reports</button>
+<button class="tab-btn" onclick="showTab('radiology')"><i class="fa-solid fa-radiology me-1"></i>Radiology</button>
+<button class="tab-btn" onclick="showTab('bills')"><i class="fa-solid fa-receipt me-1"></i>Bills</button>
+<button class="tab-btn" onclick="showTab('pharmacy')"><i class="fa-solid fa-pills me-1"></i>Pharmacy</button>
+<button class="tab-btn" onclick="showTab('admissions')"><i class="fa-solid fa-bed me-1"></i>Admissions</button>
+<button class="tab-btn" onclick="showTab('insurance')"><i class="fa-solid fa-shield me-1"></i>Insurance</button>
+<button class="tab-btn" onclick="showTab('records')"><i class="fa-solid fa-file-medical me-1"></i>Medical Records</button>
+</div>
+
+<!-- Tab Content -->
+<!-- Visits Tab -->
+<div id="tab-visits" class="tab-content">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-stethoscope me-2"></i>OPD Visits</div>
+{% for v in visits %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div>
+<strong>Token #{{ v.token_number }}</strong> — {{ v.visit_date|date:"Y-m-d H:i" }}
+<div style="color:var(--tx2);font-size:.85rem">{{ v.department.name|default:"N/A" }} — Dr. {{ v.doctor.name|default:"N/A" }}</div>
+</div>
+<div>
+{% if v.status == 'waiting' %}<span class="badge-sm bg-waiting">Waiting</span>
+{% elif v.status == 'in_progress' %}<span class="badge-sm bg-progress">In Progress</span>
+{% else %}<span class="badge-sm bg-completed">Completed</span>{% endif %}
+<span style="font-size:.8rem;color:var(--tx3);margin-left:8px">NPR {{ v.registration_fee }}</span>
+</div>
+</div>
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No visits yet</div>
+{% endfor %}
+</div>
+</div>
+
+<!-- Lab Tab -->
+<div id="tab-lab" class="tab-content" style="display:none">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-flask me-2"></i>Lab Reports</div>
+{% for l in lab_results %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div><strong>{{ l.test_name }}</strong><div style="color:var(--tx2);font-size:.85rem">{{ l.created_at|date:"Y-m-d" }} {% if l.priority %}| Priority: {{ l.priority }}{% endif %}</div></div>
+<div>{% if l.status == 'completed' %}<span class="badge-sm bg-completed">Completed</span>{% elif l.status == 'pending' %}<span class="badge-sm bg-pending">Pending</span>{% else %}<span class="badge-sm bg-progress">{{ l.status }}</span>{% endif %}</div>
+</div>
+{% if l.status == 'completed' and l.result_notes %}<div style="color:var(--tx2);font-size:.85rem;margin-top:4px"><i class="fa-solid fa-check-circle me-1"></i>{{ l.result_notes|truncatewords:20 }}</div>{% endif %}
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No lab reports yet</div>
+{% endfor %}
+</div>
+</div>
+
+<!-- Radiology Tab -->
+<div id="tab-radiology" class="tab-content" style="display:none">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-x-ray me-2"></i>Radiology Reports</div>
+{% for r in rad_results %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div><strong>{{ r.imaging_type|default:"Imaging" }}{% if r.request_id %} — {{ r.request_id }}{% endif %}</strong><div style="color:var(--tx2);font-size:.85rem">{{ r.created_at|date:"Y-m-d" }}</div></div>
+<div>{% if r.status == 'completed' %}<span class="badge-sm bg-completed">Completed</span>{% else %}<span class="badge-sm bg-pending">{{ r.status }}</span>{% endif %}</div>
+</div>
+{% if r.status == 'completed' and r.findings %}<div style="color:var(--tx2);font-size:.85rem;margin-top:4px"><i class="fa-solid fa-check-circle me-1"></i>{{ r.findings|truncatewords:15 }}</div>{% endif %}
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No radiology reports yet</div>
+{% endfor %}
+</div>
+</div>
+
+<!-- Bills Tab -->
+<div id="tab-bills" class="tab-content" style="display:none">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-receipt me-2"></i>Bills</div>
+{% for b in bills %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div><strong>{{ b.bill_id }}</strong><div style="color:var(--tx2);font-size:.85rem">{{ b.created_at|date:"Y-m-d" }} | {{ b.payment_method }}</div></div>
+<div><span style="font-weight:700;color:var(--pur)">NPR {{ b.net_amount }}</span>{% if b.paid %}<span class="badge-sm bg-completed ms-2">Paid</span>{% else %}<span class="badge-sm bg-pending ms-2">Unpaid</span>{% endif %}</div>
+</div>
+{% if b.bill_items.count %}<div style="font-size:.8rem;color:var(--tx3);margin-top:4px">
+{% for item in b.bill_items.all %}{{ item.service_name }} (NPR {{ item.item_total }}){% if not forloop.last %}, {% endif %}{% endfor %}
+</div>{% endif %}
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No bills yet</div>
+{% endfor %}
+</div>
+</div>
+
+<!-- Pharmacy Tab -->
+<div id="tab-pharmacy" class="tab-content" style="display:none">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-pills me-2"></i>Pharmacy Sales</div>
+{% for p in pharmacy %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div><strong>{{ p.sale_id }}</strong><div style="color:var(--tx2);font-size:.85rem">{{ p.sale_date|date:"Y-m-d" }}</div></div>
+<div><span style="font-weight:700;color:var(--pur)">NPR {{ p.final_amount }}</span></div>
+</div>
+{% if p.saleitem_set.count %}<div style="font-size:.8rem;color:var(--tx3);margin-top:4px">
+{% for item in p.saleitem_set.all %}{{ item.medicine.name }} x{{ item.quantity }}{% if not forloop.last %}, {% endif %}{% endfor %}
+</div>{% endif %}
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No pharmacy sales yet</div>
+{% endfor %}
+</div>
+</div>
+
+<!-- Admissions Tab -->
+<div id="tab-admissions" class="tab-content" style="display:none">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-bed me-2"></i>Admissions</div>
+{% for a in admissions %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div><strong>{{ a.admission_id }}</strong><div style="color:var(--tx2);font-size:.85rem">{{ a.admission_date|date:"Y-m-d" }} | {{ a.ward.name|default:"N/A" }} — Bed {{ a.bed.bed_number|default:"N/A" }}</div></div>
+<div>{% if a.status == 'admitted' %}<span class="badge-sm bg-admitted">Admitted</span>{% else %}<span class="badge-sm bg-discharged">Discharged</span>{% endif %}</div>
+</div>
+{% if a.diagnosis %}<div style="font-size:.85rem;color:var(--tx2);margin-top:4px">Diagnosis: {{ a.diagnosis|truncatewords:15 }}</div>{% endif %}
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No admissions yet</div>
+{% endfor %}
+</div>
+</div>
+
+<!-- Insurance Tab -->
+<div id="tab-insurance" class="tab-content" style="display:none">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-shield me-2"></i>Insurance Claims</div>
+{% for c in claims %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div><strong>{{ c.claim_id }}</strong><div style="color:var(--tx2);font-size:.85rem">{{ c.created_at|date:"Y-m-d" }}{% if c.insurance %} | {{ c.insurance.insurer }}{% endif %}</div></div>
+<div>
+{% if c.status == 'approved' %}<span class="badge-sm bg-approved">Approved</span>
+{% elif c.status == 'pending' %}<span class="badge-sm bg-pending">Pending</span>
+{% elif c.status == 'settled' %}<span class="badge-sm bg-completed">Settled</span>
+{% else %}<span class="badge-sm bg-pending">{{ c.status }}</span>{% endif %}
+<span style="font-weight:600;margin-left:8px">NPR {{ c.amount }}</span>
+</div>
+</div>
+{% if c.status == 'approved' %}<div style="font-size:.85rem;color:var(--tx2);margin-top:4px">Approved Amount: NPR {{ c.approved_amount }}</div>{% endif %}
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No insurance claims yet</div>
+{% endfor %}
+</div>
+</div>
+
+<!-- Medical Records Tab -->
+<div id="tab-records" class="tab-content" style="display:none">
+<div class="pcard">
+<div class="section-title"><i class="fa-solid fa-file-medical me-2"></i>Medical Records</div>
+{% for mr in medical_records %}
+<div class="record-item">
+<div class="d-flex justify-content-between align-items-center">
+<div><strong>{{ mr.title }}</strong><div style="color:var(--tx2);font-size:.85rem">{{ mr.department }} | {{ mr.created_at|date:"Y-m-d" }}</div></div>
+<div><span class="badge-sm bg-completed">{{ mr.record_type }}</span></div>
+</div>
+{% if mr.summary %}<div style="font-size:.85rem;color:var(--tx2);margin-top:4px">{{ mr.summary|truncatewords:20 }}</div>{% endif %}
+</div>
+{% empty %}
+<div style="text-align:center;color:var(--tx3);padding:20px">No medical records yet</div>
+{% endfor %}
+</div>
+</div>
+
+</div></section>
+
+<footer style="padding:20px 0;border-top:1px solid var(--bd)">
+<div class="container text-center" style="color:var(--tx3);font-size:.75rem">
+<div style="font-weight:600;color:var(--pur);margin-bottom:4px">Hamro Hospital — Health is Wealth</div>
+Emergency: +977-1-4XXXXXX | Kathmandu, Nepal | info@hamrohospital.com
+<br>© 2026 Hamro Hospital Patient Portal
+</div></footer>
+</div>
+
+<script src="/static/js/website-theme.js"></script>
+<script>
+function showTab(tab) {
+    document.querySelectorAll('.tab-content').forEach(el => el.style.display = 'none');
+    document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+    document.getElementById('tab-' + tab).style.display = 'block';
+    event.target.classList.add('active');
+}
+</script>
+</body></html>

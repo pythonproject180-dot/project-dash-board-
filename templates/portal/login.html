@@ -1,0 +1,28 @@
+<!DOCTYPE html><html lang="en" data-bs-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Patient Portal Login - Hamro Hospital</title>
+<link href="/static/css/bootstrap.min.css" rel="stylesheet"/><link href="/static/css/all.min.css" rel="stylesheet"/><link href="/static/css/style.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+</head><body><div id="landing" style="min-height:100vh;display:flex;align-items:center">
+<div class="container"><div class="row justify-content-center"><div class="col-md-6">
+<div class="gc p-5"><div class="text-center mb-4">
+<div class="logo-i" style="font-size:1.5rem"><i class="fa-solid fa-hospital"></i></div>
+<h3 style="font-weight:700">Patient Portal Login</h3>
+<p style="color:var(--tx2)">Access your medical records and appointments</p>
+</div>
+
+{% if error %}
+<div class="alert alert-danger"><i class="fa-solid fa-exclamation-triangle me-2"></i>{{ error }}</div>
+{% endif %}
+
+<form method="post">{% csrf_token %}
+<div class="mb-3"><label class="form-label fw-bold">Hospital ID or Phone Number</label><input type="text" class="form-control" name="hospital_id" placeholder="e.g. HT-000001 or +977-98XXXXXXXX" required/></div>
+<div class="mb-3"><label class="form-label fw-bold">Password</label><input type="password" class="form-control" name="password" placeholder="Your portal password" required/></div>
+<button class="bgrd btn w-100 py-2" type="submit"><i class="fa-solid fa-sign-in-alt me-2"></i>Login</button>
+</form>
+<div style="text-align:center;margin-top:16px;color:var(--tx2);font-size:.85rem;line-height:2">
+<a href="/portal/signup/" style="color:var(--pur)"><i class="fa-solid fa-user-plus me-1"></i>New patient? Create account</a><br/>
+<a href="/portal/forgot-password/" style="color:var(--tx3)"><i class="fa-solid fa-key me-1"></i>Forgot password?</a> |
+<a href="/" style="color:var(--tx3)"><i class="fa-solid fa-home me-1"></i>Back to website</a>
+</div>
+</div></div></div></div></div>
+<script src="/static/js/website-theme.js"></script>
+</body></html>

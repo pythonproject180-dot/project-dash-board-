@@ -1,0 +1,99 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0"><i class="fas fa-shield-alt me-2"></i>Insurance Claim Receipt</h4>
+        <div>
+            <button onclick="window.print()" class="btn btn-outline-primary me-2"><i class="fas fa-print me-1"></i>Print</button>
+            <a href="/insurance/claim-pdf/{{ claim.pk }}/" class="btn btn-outline-success me-2"><i class="fas fa-file-pdf me-1"></i>PDF</a>
+            <a href="/insurance/claim-jpg/{{ claim.pk }}/" class="btn btn-outline-warning"><i class="fas fa-image me-1"></i>JPG</a>
+        </div>
+    </div>
+
+    <div class="card shadow-lg" id="printable-area">
+        <!-- Hospital Header -->
+        <div class="card-header text-center bg-primary text-white py-3">
+            <h3 class="mb-0">Hamro Hospital</h3>
+            <p class="mb-0 small">Kathmandu, Nepal | Emergency: +977-01-XXXXXXX | www.hamrohospital.org.np</p>
+        </div>
+
+        <div class="card-body">
+            <h4 class="text-center mb-4 fw-bold">INSURANCE CLAIM RECEIPT</h4>
+
+            <!-- Patient & Insurance Info -->
+            <div class="row mb-3">
+                <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr><td class="fw-bold w-25">Patient:</td><td>{{ claim.patient.full_name }}</td></tr>
+                        <tr><td class="fw-bold">Hospital ID:</td><td>{{ claim.patient.patient_id }}</td></tr>
+                        <tr><td class="fw-bold">Age/Gender:</td><td>{{ claim.patient.age_display }} / {{ claim.patient.gender }}</td></tr>
+                        <tr><td class="fw-bold">Phone:</td><td>{{ claim.patient.phone }}</td></tr>
+                        <tr><td class="fw-bold">Address:</td><td>{{ claim.patient.address_display }}</td></tr>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr><td class="fw-bold w-25">Claim ID:</td><td>{{ claim.claim_id }}</td></tr>
+                        <tr><td class="fw-bold">Insurer:</td><td>{{ insurance.insurer.name }}</td></tr>
+                        <tr><td class="fw-bold">Policy No:</td><td>{{ insurance.policy_number }}</td></tr>
+                        <tr><td class="fw-bold">Coverage:</td><td>{{ coverage_pct }}%</td></tr>
+                        <tr><td class="fw-bold">Status:</td><td>{{ claim.status }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QR Codes -->
+            <div class="row mb-3">
+                <div class="col-3 text-center">
+                    {% if claim.patient.qr_code %}
+                    <img src="{{ claim.patient.qr_code.url }}" alt="Patient QR" class="img-fluid" style="max-height:80px;">
+                    <small class="d-block">Patient QR</small>
+                    {% endif %}
+                </div>
+                <div class="col-3 text-center">
+                    {% if claim.barcode %}
+                    <img src="{{ claim.barcode.url }}" alt="Insurance Barcode" class="img-fluid" style="max-height:80px;">
+                    <small class="d-block">Insurance Barcode</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Payment Breakdown -->
+            <hr>
+            <table class="table table-bordered">
+                <tr class="bg-light"><td class="fw-bold">Total Amount</td><td class="fw-bold text-end">NPR {{ claim.amount }}</td></tr>
+                <tr><td class="fw-bold">Insurance Coverage ({{ coverage_pct }}%)</td><td class="text-end">NPR {{ discount_amount }}</td></tr>
+                <tr><td class="fw-bold">Remaining Balance</td><td class="text-end">NPR {{ remaining }}</td></tr>
+                <tr class="bg-dark text-white"><td class="fw-bold">Approved Amount</td><td class="fw-bold text-end">NPR {{ claim.approved_amount }}</td></tr>
+            </table>
+
+            <!-- Notes -->
+            {% if claim.notes %}
+            <div class="mb-3">
+                <h6 class="fw-bold">Notes</h6>
+                <p>{{ claim.notes }}</p>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer text-center bg-dark text-white py-2">
+            <p class="mb-0 small"><strong>Health is Wealth</strong> | Emergency: +977-01-XXXXXXX | www.hamrohospital.org.np</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="d-flex justify-content-center mt-4">
+        <a href="/insurance/" class="btn btn-outline-secondary me-2"><i class="fas fa-home me-1"></i>Insurance Dashboard</a>
+        <a href="/patients/detail/{{ claim.patient.pk }}/" class="btn btn-outline-primary me-2"><i class="fas fa-user me-1"></i>Patient Profile</a>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .d-flex.justify-content-between, .d-flex.justify-content-center, nav, .sidebar { display: none !important; }
+    .card { border: none !important; }
+    .card-header, .card-footer { -webkit-print-color-adjust: exact; }
+}
+</style>
+{% endblock %}

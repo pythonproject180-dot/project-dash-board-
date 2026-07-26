@@ -1,0 +1,247 @@
+from django.shortcuts import render, redirect, get_object_or_404
+from django.contrib.auth.decorators import login_required
+from django.utils import timezone
+from django.db.models import Q, Sum
+from django.http import JsonResponse
+from .models import HospitalService, Bill, BillItem
+from patients.models import Patient
+from departments.models import Department
+from accounts.decorators import cash_counter_required, super_admin_required
+from utils.pdf_utils import download_as_pdf, download_as_image
+
+
+def format_nepal_amount(amount):
+    """Format large amounts in Lakh/Crore notation."""
+    try:
+        amt = float(amount)
+        if amt >= 10000000:
+            return f'{amt/10000000:.2f} Crore'
+        elif amt >= 100000:
+            return f'{amt/100000:.2f} Lakh'
+        else:
+            return f'NPR {amt:,.0f}'
+    except (ValueError, TypeError):
+        return f'NPR {amount}'
+
+
+@login_required
+@cash_counter_required
+def cash_counter_dashboard(request):
+    """Cash Counter Dashboard with collection stats and popup cards."""
+    today = timezone.now().date()
+    month_start = today.replace(day=1)
+    year_start = today.replace(month=1, day=1)
+
+    today_collection = Bill.objects.filter(created_at__date=today, paid=True).aggregate(total=Sum('net_amount'))['total'] or 0
+    month_collection = Bill.objects.filter(created_at__date__gte=month_start, paid=True).aggregate(total=Sum('net_amount'))['total'] or 0
+    year_collection = Bill.objects.filter(created_at__date__gte=year_start, paid=True).aggregate(total=Sum('net_amount'))['total'] or 0
+
+    today_bills = Bill.objects.filter(created_at__date=today).count()
+    pending_bills = Bill.objects.filter(paid=False).count()
+
+    recent_bills = Bill.objects.all().order_by('-created_at')[:10]
+
+    context = {
+        'today_collection': format_nepal_amount(today_collection),
+        'today_collection_raw': today_collection,
+        'month_collection': format_nepal_amount(month_collection),
+        'month_collection_raw': month_collection,
+        'year_collection': format_nepal_amount(year_collection),
+        'year_collection_raw': year_collection,
+        'today_bills': today_bills,
+        'pending_bills': pending_bills,
+        'recent_bills': recent_bills,
+        'role': request.user.role,
+    }
+    return render(request, 'dashboard/cash_counter.html', context)
+
+
+@login_required
+@cash_counter_required
+def create_bill(request):
+    """Create bill with autocomplete service search, payment method, and audit-safe pricing."""
+    if request.method == 'POST':
+        patient_id = request.POST.get('patient')
+        service_ids = request.POST.getlist('services')
+        payment_method = request.POST.get('payment_method', 'cash')
+        discount_type = request.POST.get('discount_type', 'none')
+
+        patient = get_object_or_404(Patient, pk=patient_id)
+
+        # Create bill
+        bill = Bill.objects.create(
+            patient=patient,
+            payment_method=payment_method,
+            discount_type=discount_type,
+            created_by=request.user,
+            paid=True,
+        )
+
+        total_amount = 0
+        for sid in service_ids:
+            service = HospitalService.objects.get(pk=sid)
+            BillItem.objects.create(
+                bill=bill,
+                service=service,
+                service_name=service.name,
+                service_code=service.code,
+                service_price=service.price,  # Audit-safe: snapshot price at billing time
+                quantity=1,
+                item_total=service.price,
+            )
+            total_amount += service.price
+
+        bill.total_amount = total_amount
+
+        # Apply discount based on type
+        if discount_type == 'staff':
+            bill.discount_amount = total_amount * 0.10  # 10% staff discount
+        elif discount_type == 'insurance':
+            from insurance.models import PatientInsurance
+            ins = PatientInsurance.objects.filter(patient=patient, is_active=True).first()
+            if ins:
+                bill.discount_amount = total_amount * (ins.coverage_percentage / 100)
+            else:
+                bill.discount_amount = 0
+        elif discount_type == 'special':
+            bill.discount_amount = total_amount * 0.05  # 5% special discount
+
+        bill.save()
+
+        from accounts.models import AuditLog
+        AuditLog.objects.create(
+            user=request.user, action='Create Bill', module='billing',
+            detail=f'{bill.bill_id} - NPR {bill.net_amount}', patient_id=patient.patient_id,
+        )
+
+        # Auto-attach to medical record
+        from medical_records.models import MedicalRecord
+        MedicalRecord.objects.create(
+            patient=patient,
+            department='billing',
+            record_type='pharmacy_record',
+            title=f'Bill Receipt - {bill.bill_id}',
+            summary=f'Total: NPR {bill.total_amount}, Discount: NPR {bill.discount_amount}, Net: NPR {bill.net_amount}',
+            uploaded_by=str(request.user),
+            staff_name=str(request.user),
+        )
+
+        return render(request, 'dashboard/bill_receipt.html', {
+            'bill': bill, 'role': request.user.role,
+        })
+
+    patients = Patient.objects.all().order_by('-created_at')
+    services = HospitalService.objects.filter(is_active=True).order_by('code')
+    departments = Department.objects.filter(is_active=True)
+
+    context = {
+        'patients': patients, 'services': services, 'departments': departments,
+        'role': request.user.role,
+    }
+    return render(request, 'dashboard/create_bill.html', context)
+
+
+@login_required
+@cash_counter_required
+def service_autocomplete(request):
+    """AJAX autocomplete for hospital services — typing X shows X-Ray, E shows ECG, etc."""
+    query = request.GET.get('q', '')
+    if query:
+        services = HospitalService.objects.filter(
+            Q(name__icontains=query) | Q(code__icontains=query),
+            is_active=True
+        ).values('pk', 'code', 'name', 'price')[:20]
+        return JsonResponse(list(services), safe=False)
+    return JsonResponse([], safe=False)
+
+
+@login_required
+def bill_search(request):
+    """Search bills by patient, bill ID, date."""
+    query = request.GET.get('q', '')
+    date_filter = request.GET.get('date', '')
+    bills = Bill.objects.all().order_by('-created_at')
+    if query:
+        bills = bills.filter(
+            Q(bill_id__icontains=query) |
+            Q(patient__patient_id__icontains=query) |
+            Q(patient__full_name__icontains=query)
+        )
+    if date_filter:
+        bills = bills.filter(created_at__date=date_filter)
+    return render(request, 'dashboard/bill_search.html', {
+        'bills': bills, 'query': query, 'role': request.user.role,
+    })
+
+
+@login_required
+def bill_detail(request, pk):
+    """Bill detail with printable receipt, PDF/JPG download buttons."""
+    bill = get_object_or_404(Bill, pk=pk)
+    items = BillItem.objects.filter(bill=bill)
+    context = {
+        'bill': bill, 'items': items,
+        'role': request.user.role,
+    }
+    return render(request, 'dashboard/bill_receipt.html', context)
+
+
+@login_required
+@super_admin_required
+def service_list(request):
+    """Manage hospital services — Super Admin only."""
+    services = HospitalService.objects.all().order_by('code')
+    return render(request, 'dashboard/service_list.html', {
+        'services': services, 'role': request.user.role,
+    })
+
+
+@login_required
+@super_admin_required
+def service_add(request):
+    """Add new hospital service — Super Admin only."""
+    if request.method == 'POST':
+        HospitalService.objects.create(
+            code=request.POST.get('code'),
+            name=request.POST.get('name'),
+            department_id=request.POST.get('department'),
+            price=request.POST.get('price'),
+            category=request.POST.get('category', 'opd'),
+        )
+        return redirect('/billing/services/')
+    departments = Department.objects.filter(is_active=True)
+    return render(request, 'dashboard/service_form.html', {
+        'departments': departments, 'role': request.user.role,
+    })
+
+
+@login_required
+@cash_counter_required
+def today_collections(request):
+    """Today's collection detail — drill-down from dashboard card popup."""
+    today = timezone.now().date()
+    bills = Bill.objects.filter(created_at__date=today).order_by('-created_at')
+    total = bills.aggregate(total=Sum('net_amount'))['total'] or 0
+    context = {
+        'bills': bills, 'total': format_nepal_amount(total), 'total_raw': total,
+        'date': today, 'role': request.user.role,
+    }
+    return render(request, 'dashboard/today_collections.html', context)
+
+
+@login_required
+def bill_receipt_pdf_view(request, pk):
+    """PDF download for bill receipt."""
+    bill = get_object_or_404(Bill, pk=pk)
+    items = BillItem.objects.filter(bill=bill)
+    context = {'bill': bill, 'items': items, 'role': request.user.role, 'is_pdf': True}
+    return download_as_pdf('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.pdf')
+
+
+@login_required
+def bill_receipt_jpg_view(request, pk):
+    """JPG download for bill receipt."""
+    bill = get_object_or_404(Bill, pk=pk)
+    items = BillItem.objects.filter(bill=bill)
+    context = {'bill': bill, 'items': items, 'role': request.user.role, 'is_pdf': True}
+    return download_as_image('dashboard/bill_receipt.html', context, filename=f'Bill-{bill.bill_id}.jpg')

@@ -1,0 +1,120 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Consultation - {{ visit.patient.full_name }} - Hamro Hospital{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/doctors/dashboard/">Doctor Dashboard</a></li>
+<li class="breadcrumb-item active">Consultation</li>
+{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body">
+                <div class="text-center mb-3">
+                    <div class="avatar avatar-lg rounded-circle bg-primary text-white d-flex align-items-center justify-content-center fs-3" style="width:64px;height:64px">{{ visit.patient.full_name|make_list|first|upper }}</div>
+                    <h5 class="mt-2">{{ visit.patient.full_name }}</h5>
+                    <p class="text-secondary">{{ visit.patient.patient_id }} | Token: {{ visit.token_number }}</p>
+                </div>
+                <div class="row g-2">
+                    <div class="col-6"><small class="text-secondary">Age</small><div>{{ visit.patient.age_display }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Gender</small><div>{{ visit.patient.gender }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Blood Group</small><div>{{ visit.patient.blood_group|default:"—" }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Phone</small><div>{{ visit.patient.phone }}</div></div>
+                    <div class="col-12"><small class="text-secondary">Department</small><div>{{ visit.department|default:"—" }}</div></div>
+                    <div class="col-12"><small class="text-secondary">Allergies</small><div>{{ visit.patient.allergies|default:"None" }}</div></div>
+                </div>
+                {% if visit.patient.qr_code %}
+                <div class="text-center mt-3"><img src="{{ visit.patient.qr_code.url }}" style="width:80px;height:80px"/></div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Start Consultation</h4>
+                <a href="/doctors/dashboard/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back to Queue</a>
+            </div>
+            <div class="card-body">
+                <form method="post" id="consultationForm">{% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Diagnosis</label>
+                            <textarea class="form-control" name="diagnosis" rows="3" placeholder="Enter diagnosis..."></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Clinical Notes</label>
+                            <textarea class="form-control" name="clinical_notes" rows="3" placeholder="Enter clinical notes..."></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Follow-up Date</label>
+                            <input type="date" class="form-control" name="follow_up_date"/>
+                        </div>
+                    </div>
+
+                    <hr class="my-4"/>
+                    <h5>Prescriptions</h5>
+                    <div id="prescriptionList">
+                        <div class="row g-3 mb-2 prescription-row">
+                            <div class="col-md-3"><input type="text" class="form-control" name="medicine_0" placeholder="Medicine"/></div>
+                            <div class="col-md-2"><input type="text" class="form-control" name="dosage_0" placeholder="Dosage"/></div>
+                            <div class="col-md-2"><input type="text" class="form-control" name="frequency_0" placeholder="Frequency"/></div>
+                            <div class="col-md-2"><input type="text" class="form-control" name="duration_0" placeholder="Duration"/></div>
+                            <div class="col-md-3"><input type="text" class="form-control" name="instructions_0" placeholder="Instructions"/></div>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-sm btn-success mb-3" onclick="addPrescription()"><i class="ti ti-plus me-1"></i>Add Prescription</button>
+
+                    <hr class="my-4"/>
+                    <h5>Lab Tests</h5>
+                    <div class="row g-2">
+                        {% for test in lab_catalog %}
+                        <div class="col-md-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" name="lab_tests" value="{{ test.name }}"/>
+                                <label class="form-check-label">{{ test.name }}</label>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+
+                    <hr class="my-4"/>
+                    <h5>Radiology</h5>
+                    <div class="row g-2">
+                        <div class="col-md-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="radiology_types" value="xray"/><label class="form-check-label">X-Ray</label></div></div>
+                        <div class="col-md-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="radiology_types" value="ct"/><label class="form-check-label">CT</label></div></div>
+                        <div class="col-md-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="radiology_types" value="mri"/><label class="form-check-label">MRI</label></div></div>
+                        <div class="col-md-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="radiology_types" value="ecg"/><label class="form-check-label">ECG</label></div></div>
+                        <div class="col-md-2"><div class="form-check"><input class="form-check-input" type="checkbox" name="radiology_types" value="ultrasound"/><label class="form-check-label">Ultrasound</label></div></div>
+                    </div>
+
+                    <input type="hidden" name="prescription_count" id="prescriptionCount" value="1"/>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>Complete Consultation</button>
+                        <a href="/doctors/dashboard/" class="btn btn-white ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% block extra_js %}
+<script>
+let pCount = 1;
+function addPrescription() {
+    pCount++;
+    document.getElementById('prescriptionCount').value = pCount;
+    const row = document.createElement('div');
+    row.className = 'row g-3 mb-2 prescription-row';
+    row.innerHTML = `
+        <div class="col-md-3"><input type="text" class="form-control" name="medicine_${pCount-1}" placeholder="Medicine"/></div>
+        <div class="col-md-2"><input type="text" class="form-control" name="dosage_${pCount-1}" placeholder="Dosage"/></div>
+        <div class="col-md-2"><input type="text" class="form-control" name="frequency_${pCount-1}" placeholder="Frequency"/></div>
+        <div class="col-md-2"><input type="text" class="form-control" name="duration_${pCount-1}" placeholder="Duration"/></div>
+        <div class="col-md-3"><input type="text" class="form-control" name="instructions_${pCount-1}" placeholder="Instructions"/></div>
+    `;
+    document.getElementById('prescriptionList').appendChild(row);
+}
+</script>
+{% endblock %}
+{% endblock %}

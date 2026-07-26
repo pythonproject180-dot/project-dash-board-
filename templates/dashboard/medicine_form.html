@@ -1,0 +1,32 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Add Medicine - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/pharmacy/">Pharmacy</a></li><li class="breadcrumb-item active">Add Medicine</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">Add Medicine</h4></div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>{% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Name</label><input type="text" class="form-control" name="name" required/></div>
+                        <div class="col-md-6"><label class="form-label">Code</label><input type="text" class="form-control" name="code" required/></div>
+                        <div class="col-md-6"><label class="form-label">Generic Name</label><input type="text" class="form-control" name="generic_name"/></div>
+                        <div class="col-md-6"><label class="form-label">Manufacturer</label><input type="text" class="form-control" name="manufacturer"/></div>
+                        <div class="col-md-4"><label class="form-label">Unit</label><select class="form-select" name="unit"><option>Tablet</option><option>Capsule</option><option>Syrup</option><option>Injection</option><option>Ointment</option><option>Drops</option></select></div>
+                        <div class="col-md-4"><label class="form-label">Price (Rs.)</label><input type="number" class="form-control" name="price" required step="0.01"/></div>
+                        <div class="col-md-4"><label class="form-label">Stock Quantity</label><input type="number" class="form-control" name="stock_quantity" value="0"/></div>
+                        <div class="col-md-4"><label class="form-label">Minimum Stock</label><input type="number" class="form-control" name="minimum_stock" value="10"/></div>
+                        <div class="col-md-4"><label class="form-label">Expiry Date</label><input type="date" class="form-control" name="expiry_date"/></div>
+                        <div class="col-md-4"><label class="form-label">Department</label><select class="form-select" name="department"><option value="">None</option>{% for d in departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}</select></div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>Save</button>
+                            <a href="/pharmacy/medicines/" class="btn btn-white ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

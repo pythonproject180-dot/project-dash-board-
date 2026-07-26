@@ -1,0 +1,47 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Admission List - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/admissions/">Admissions</a></li><li class="breadcrumb-item active">All Admissions</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">All Admissions</h4>
+                <a href="/admissions/admit/" class="btn btn-primary"><i class="ti ti-bed me-1"></i>Admit Patient</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>ID</th><th>Patient</th><th>Doctor</th><th>Ward</th><th>Bed</th><th>Date</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {% for adm in admissions %}
+                            <tr>
+                                <td>{{ adm.admission_id }}</td>
+                                <td><a href="/patients/detail/{{ adm.patient.pk }}/">{{ adm.patient.full_name }}</a></td>
+                                <td>{{ adm.doctor|default:"—" }}</td>
+                                <td>{{ adm.ward|default:"—" }}</td>
+                                <td>{{ adm.bed|default:"—" }}</td>
+                                <td>{{ adm.admission_date|date:"Y-m-d" }}</td>
+                                <td>
+                                    {% if adm.status == 'admitted' %}<span class="badge bg-info-subtle text-info-emphasis">Admitted</span>
+                                    {% else %}<span class="badge bg-success-subtle text-success-emphasis">Discharged</span>{% endif %}
+                                </td>
+                                <td>
+                                    {% if adm.status == 'admitted' %}
+                                    <a href="/admissions/discharge/{{ adm.pk }}/" class="btn btn-sm btn-warning">Discharge</a>
+                                    {% else %}
+                                    <span class="text-secondary small">Completed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="text-center text-secondary py-4">No admissions found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

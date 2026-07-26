@@ -1,0 +1,29 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Department Report - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Department Report</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Department Report</h4>
+                <a href="/reports/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Department</th><th>Patients</th></tr></thead>
+                        <tbody>
+                            {% for dept in departments %}
+                            <tr><td>{{ dept.name }}</td><td>{{ dept.patient_count|default:0 }}</td></tr>
+                            {% empty %}
+                            <tr><td colspan="2" class="text-center text-secondary py-4">No data.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Add Nursing Note - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/nursing/">Nursing</a></li><li class="breadcrumb-item active">Add Note</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Nursing Note — {{ patient.full_name }}</h4>
+                <a href="/nursing/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back</a>
+            </div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data">{% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Note Type</label>
+                            <select class="form-select" name="note_type">
+                                <option value="nursing_note">Nursing Note</option>
+                                <option value="vital_signs">Vital Signs</option>
+                                <option value="progress">Progress Note</option>
+                                <option value="observation">Observation</option>
+                                <option value="medication_admin">Medication Administration</option>
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Content</label>
+                            <textarea class="form-control" name="content" rows="4" required></textarea>
+                        </div>
+                        <div class="col-md-3"><label class="form-label">BP</label><input type="text" class="form-control" name="vital_bp" placeholder="e.g. 120/80"/></div>
+                        <div class="col-md-3"><label class="form-label">Temperature</label><input type="text" class="form-control" name="vital_temp" placeholder="e.g. 98.6°F"/></div>
+                        <div class="col-md-3"><label class="form-label">Pulse</label><input type="text" class="form-control" name="vital_pulse" placeholder="e.g. 72"/></div>
+                        <div class="col-md-3"><label class="form-label">Respiration</label><input type="text" class="form-control" name="vital_resp" placeholder="e.g. 18"/></div>
+                        <div class="col-md-12"><label class="form-label">Attach File</label><input type="file" class="form-control" name="attached_file"/></div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>Save Note</button>
+                            <a href="/nursing/" class="btn btn-white ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

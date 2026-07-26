@@ -1,0 +1,39 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Lab Search - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/laboratory/">Laboratory</a></li><li class="breadcrumb-item active">Search</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">Search Lab Requests</h4></div>
+            <div class="card-body">
+                <form method="get" class="d-flex gap-3 mb-4">
+                    <input type="text" class="form-control" name="q" value="{{ query }}" placeholder="Search by patient ID, name, or phone..."/>
+                    <button type="submit" class="btn btn-primary"><i class="ti ti-search me-1"></i>Search</button>
+                </form>
+                {% if results %}
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Patient</th><th>Test</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {% for req in results %}
+                            <tr>
+                                <td><a href="/patients/detail/{{ req.patient.pk }}/">{{ req.patient.full_name }}</a></td>
+                                <td>{{ req.test_name }}</td>
+                                <td>{{ req.priority }}</td>
+                                <td>{{ req.status }}</td>
+                                <td>{{ req.created_at|date:"Y-m-d" }}</td>
+                                <td><a href="/laboratory/request/{{ req.pk }}/" class="btn btn-sm btn-primary">View</a></td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                {% elif query %}
+                <div class="text-center text-secondary py-4">No results found.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

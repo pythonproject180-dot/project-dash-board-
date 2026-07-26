@@ -1,0 +1,136 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Accounts Dashboard - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Accounts Dashboard</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8 col-lg-6">
+        <div class="bg-gradient-mixed p-8 py-10 rounded-3 p-lg-7">
+            <h1 class="fs-3">📊 Accounts Dashboard</h1>
+            <p>Financial overview, billing summaries, and department-wise revenue.</p>
+            <div class="d-flex gap-2 mt-3">
+                <a href="/reports/revenue/" class="btn btn-dark"><i class="ti ti-chart-bar me-1"></i>View Revenue</a>
+                <a href="/reports/revenue-csv/" class="btn btn-outline-dark"><i class="ti ti-download me-1"></i>Export CSV</a>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6">
+        <div class="card card-lg"><div class="card-body">
+            <h5 class="mb-3"><i class="ti ti-coin me-2"></i>Grand Total (Monthly)</h5>
+            <div class="fs-3 fw-bold text-success">{{ grand_total }}</div>
+            <p class="text-secondary mb-3">All departments combined</p>
+            <a href="/reports/revenue/" class="btn btn-sm btn-outline-primary w-100">View Detailed Revenue</a>
+        </div></div>
+    </div>
+</div>
+
+<!-- Department-wise Revenue Cards -->
+<div class="row row-cols-1 row-cols-xl-3 row-cols-md-3 mb-6 g-6">
+    {% for dept_name, amount in dept_revenues.items %}
+    <div class="col">
+        <div class="card card-lg">
+            <div class="card-body d-flex flex-column gap-8">
+                <div class="d-flex align-items-center gap-3">
+                    {% if dept_name == 'Registration' %}
+                    <div class="icon-shape icon-lg rounded-circle bg-primary-darker text-primary-lighter"><i class="ti ti-clipboard fs-4"></i></div>
+                    {% elif dept_name == 'Laboratory' %}
+                    <div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><i class="ti ti-flask fs-4"></i></div>
+                    {% elif dept_name == 'Radiology' %}
+                    <div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="ti ti-radiology fs-4"></i></div>
+                    {% elif dept_name == 'Pharmacy' %}
+                    <div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><i class="ti ti-medicine fs-4"></i></div>
+                    {% elif dept_name == 'Admission' %}
+                    <div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><i class="ti ti-bed fs-4"></i></div>
+                    {% elif dept_name == 'Insurance' %}
+                    <div class="icon-shape icon-lg rounded-circle bg-secondary-darker text-secondary-lighter"><i class="ti ti-shield fs-4"></i></div>
+                    {% elif dept_name == 'Cash Counter' %}
+                    <div class="icon-shape icon-lg rounded-circle bg-dark-darker text-dark-lighter"><i class="ti ti-coin fs-4"></i></div>
+                    {% else %}
+                    <div class="icon-shape icon-lg rounded-circle bg-secondary-darker text-secondary-lighter"><i class="ti ti-hospital fs-4"></i></div>
+                    {% endif %}
+                    <div>{{ dept_name }}</div>
+                </div>
+                <div class="d-flex justify-content-between align-items-center lh-1">
+                    <div class="fs-3 fw-bold">NPR {{ amount|floatformat:0 }}</div>
+                </div>
+                <!-- Department Drill-down Modal Trigger -->
+                <button type="button" class="btn btn-sm btn-outline-primary mt-2" data-bs-toggle="modal" data-bs-target="#deptModal{{ forloop.counter }}">
+                    <i class="ti ti-eye me-1"></i>View Transactions
+                </button>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+<!-- Department Drill-down Modal -->
+{% for dept_name, amount in dept_revenues.items %}
+<div class="modal fade" id="deptModal{{ forloop.counter }}" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title"><i class="ti ti-hospital me-2"></i>{{ dept_name }} — Transactions</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <strong>Total Revenue:</strong> NPR {{ amount|floatformat:0 }}
+                    <span class="badge bg-success ms-2">This Month</span>
+                </div>
+                {% if dept_name == 'Cash Counter' %}
+                <table class="table table-hover">
+                    <thead><tr><th>Bill ID</th><th>Patient</th><th>Date</th><th>Net Amount</th><th>Payment</th></tr></thead>
+                    <tbody>
+                    {% for bill in cash_bills %}
+                    <tr><td>{{ bill.bill_id }}</td><td>{{ bill.patient.full_name }}</td><td>{{ bill.created_at|date:"Y-m-d" }}</td><td>NPR {{ bill.net_amount }}</td><td>{{ bill.payment_method }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% elif dept_name == 'Registration' %}
+                <table class="table table-hover">
+                    <thead><tr><th>Visit #</th><th>Patient</th><th>Doctor</th><th>Fee</th><th>Status</th></tr></thead>
+                    <tbody>
+                    {% for visit in reg_visits %}
+                    <tr><td>{{ visit.token_number }}</td><td>{{ visit.patient.full_name }}</td><td>{{ visit.doctor.name }}</td><td>NPR {{ visit.registration_fee }}</td><td>{{ visit.status }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% elif dept_name == 'Pharmacy' %}
+                <table class="table table-hover">
+                    <thead><tr><th>Sale ID</th><th>Patient</th><th>Amount</th><th>Payment</th></tr></thead>
+                    <tbody>
+                    {% for sale in pharm_sales %}
+                    <tr><td>{{ sale.sale_id }}</td><td>{{ sale.patient.full_name }}</td><td>NPR {{ sale.final_amount }}</td><td>{{ sale.payment_method }}</td></tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <p class="text-secondary">Detailed transaction view available via reports.</p>
+                <a href="/reports/revenue/" class="btn btn-outline-primary">Go to Revenue Report</a>
+                {% endif %}
+            </div>
+            <div class="modal-footer">
+                <a href="/reports/revenue/" class="btn btn-primary"><i class="ti ti-chart-bar me-1"></i>Revenue Report</a>
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endfor %}
+
+<!-- Quick Links -->
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0"><i class="ti ti-link me-2"></i>Quick Links</h4></div>
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-md-3"><a href="/reports/revenue/" class="btn btn-white w-100"><i class="ti ti-chart-bar me-2"></i>Revenue Report</a></div>
+                    <div class="col-md-3"><a href="/reports/registration/" class="btn btn-white w-100"><i class="ti ti-clipboard me-2"></i>Registration Report</a></div>
+                    <div class="col-md-3"><a href="/reports/department/" class="btn btn-white w-100"><i class="ti ti-hospital me-2"></i>Department Report</a></div>
+                    <div class="col-md-3"><a href="/reports/doctor/" class="btn btn-white w-100"><i class="ti ti-doctor me-2"></i>Doctor Report</a></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

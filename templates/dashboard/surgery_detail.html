@@ -1,0 +1,46 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Surgery Detail - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/operation-theatre/">OT</a></li><li class="breadcrumb-item active">{{ surgery.surgery_type }}</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">{{ surgery.surgery_type }} — {{ surgery.patient.full_name }}</h4>
+                <a href="/operation-theatre/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back</a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><strong>Patient:</strong> <a href="/patients/detail/{{ surgery.patient.pk }}/">{{ surgery.patient.full_name }}</a></div>
+                    <div class="col-md-3"><strong>Doctor:</strong> {{ surgery.doctor|default:"—" }}</div>
+                    <div class="col-md-3"><strong>Priority:</strong> {{ surgery.priority }}</div>
+                    <div class="col-md-3"><strong>Status:</strong> {{ surgery.status }}</div>
+                    <div class="col-md-3"><strong>Planned Date:</strong> {{ surgery.planned_date|default:"—" }}</div>
+                    <div class="col-md-6"><strong>Clinical Notes:</strong> {{ surgery.clinical_notes|default:"—" }}</div>
+                </div>
+                {% if surgery.status == 'scheduled' %}
+                <form method="post">{% csrf_token %}
+                    <input type="hidden" name="action" value="start"/>
+                    <button type="submit" class="btn btn-warning"><i class="ti ti-zap me-1"></i>Start Surgery</button>
+                </form>
+                {% elif surgery.status == 'in_progress' %}
+                <form method="post" enctype="multipart/form-data">{% csrf_token %}
+                    <input type="hidden" name="action" value="complete"/>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-6"><label class="form-label">Operative Report</label><textarea class="form-control" name="operative_report" rows="3"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Surgical Notes</label><textarea class="form-control" name="surgical_notes" rows="3"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Procedure Summary</label><textarea class="form-control" name="procedure_summary" rows="3"></textarea></div>
+                        <div class="col-md-6"><label class="form-label">Result File</label><input type="file" class="form-control" name="result_file"/></div>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="ti ti-check me-1"></i>Complete Surgery</button>
+                </form>
+                {% else %}
+                <div class="alert alert-success">Surgery completed.</div>
+                {% if surgery.operative_report %}<p><strong>Operative Report:</strong> {{ surgery.operative_report }}</p>{% endif %}
+                {% if surgery.procedure_summary %}<p><strong>Summary:</strong> {{ surgery.procedure_summary }}</p>{% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

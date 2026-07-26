@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Patient List - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/patients/dashboard/">Registration</a></li><li class="breadcrumb-item active">Patients</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">All Patients</h4>
+                <div class="d-flex gap-2">
+                    <a href="/patients/register/" class="btn btn-primary"><i class="ti ti-user-plus me-1"></i>Register New</a>
+                    <a href="/patients/search/" class="btn btn-white"><i class="ti ti-search me-1"></i>Search</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>ID</th><th>Name</th><th>Age</th><th>Gender</th><th>Phone</th><th>Blood Group</th><th>Date</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {% for p in patients %}
+                            <tr>
+                                <td>{{ p.patient_id }}</td>
+                                <td><a href="/patients/detail/{{ p.pk }}/">{{ p.full_name }}</a></td>
+                                <td>{{ p.age_display }}</td>
+                                <td>{{ p.gender }}</td>
+                                <td>{{ p.phone }}</td>
+                                <td>{{ p.blood_group|default:"—" }}</td>
+                                <td>{{ p.created_at|date:"Y-m-d" }}</td>
+                                <td>
+                                    <a href="/patients/detail/{{ p.pk }}/" class="btn btn-sm btn-primary">View</a>
+                                    <a href="/billing/create/?patient={{ p.pk }}" class="btn btn-sm btn-white">Bill</a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="8" class="text-center text-secondary py-4">No patients found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

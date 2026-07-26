@@ -1,0 +1,95 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Delete Patient Confirmation - Hamro Hospital{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/patients/list/">Patients</a></li>
+<li class="breadcrumb-item active">Delete Confirmation</li>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-xl-8 col-lg-10">
+    {% if not can_delete %}
+    <div class="alert alert-danger mb-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <hr>
+        <p class="mb-0">Time since registration: <strong>{{ hours_since_creation|floatformat:1 }} hours</strong></p>
+        <p class="mb-0">Contact Super Admin to delete this record.</p>
+    </div>
+    {% endif %}
+
+    <div class="card card-lg border-danger">
+        <div class="card-header bg-danger text-white">
+            <h5 class="mb-0"><i class="fas fa-trash-alt me-2"></i>Delete Patient Confirmation</h5>
+        </div>
+        <div class="card-body p-6">
+            {% if can_delete %}
+            <div class="alert alert-warning mb-4">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                <strong>Warning:</strong> You are about to permanently delete this patient record.
+                This action cannot be undone. All associated OPD visits, bills, lab tests, and other records will also be deleted.
+            </div>
+
+            <!-- Patient Summary -->
+            <div class="row g-3 mb-4">
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr><th>Patient ID</th><td>{{ patient.patient_id }}</td></tr>
+                        <tr><th>Full Name</th><td>{{ patient.full_name }}</td></tr>
+                        <tr><th>Phone</th><td>{{ patient.phone }}</td></tr>
+                        <tr><th>Gender</th><td>{{ patient.gender }}</td></tr>
+                        <tr><th>Blood Group</th><td>{{ patient.blood_group|default:"N/A" }}</td></tr>
+                    </table>
+                </div>
+                <div class="col-md-6">
+                    <table class="table table-bordered">
+                        <tr><th>Age</th><td>{{ patient.age_display }}</td></tr>
+                        <tr><th>Registration Date</th><td>{{ patient.created_at|date:"Y-m-d H:i" }}</td></tr>
+                        <tr><th>Hours Since Reg</th><td>{{ hours_since_creation|floatformat:1 }} hours</td></tr>
+                        <tr><th>Registered By</th><td>{{ patient.registered_by|default:"System" }}</td></tr>
+                        <tr><th>Source</th><td>{{ patient.registration_source }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-clock me-2"></i>
+                <strong>Edit allowed:</strong> This patient was registered {{ hours_since_creation|floatformat:1 }} hours ago.
+                {% if hours_since_creation <= 24 %}
+                You can delete within the 24-hour window.
+                {% elif role == 'super_admin' %}
+                Super Admin can delete anytime.
+                {% endif %}
+            </div>
+
+            <!-- Delete Form -->
+            <form method="post">{% csrf_token %}
+                <input type="hidden" name="step" value="confirm_delete"/>
+                <div class="mb-3">
+                    <label class="form-label fw-bold">Type <strong>"DELETE"</strong> to confirm:</label>
+                    <input type="text" class="form-control" name="confirm_text" placeholder="Type DELETE to confirm" required pattern="DELETE"/>
+                </div>
+                <div class="d-flex gap-3 mt-4">
+                    <button class="btn btn-danger btn-lg" type="submit">
+                        <i class="fas fa-trash-alt me-2"></i>Permanently Delete Patient
+                    </button>
+                    <a href="/patients/detail/{{ patient.pk }}/" class="btn btn-outline-secondary btn-lg">
+                        <i class="fas fa-arrow-left me-1"></i>Cancel — Return to Patient Profile
+                    </a>
+                    <a href="/patients/list/" class="btn btn-outline-secondary">
+                        <i class="fas fa-users me-1"></i>Return to Patient List
+                    </a>
+                </div>
+            </form>
+            {% else %}
+            <div class="text-center py-8">
+                <i class="fas fa-lock fa-3x text-muted mb-4"></i>
+                <h5>Delete Restricted</h5>
+                <p class="text-muted">{{ error }}</p>
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <a href="/patients/detail/{{ patient.pk }}/" class="btn btn-outline-primary"><i class="fas fa-eye me-1"></i>View Patient Profile</a>
+                    <a href="/patients/dashboard/" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Return to Dashboard</a>
+                </div>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div></div>
+{% endblock %}

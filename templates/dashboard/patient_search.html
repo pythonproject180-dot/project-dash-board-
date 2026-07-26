@@ -1,0 +1,22 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Search Patient - Hamro Hospital{% endblock %}
+{% block breadcrumb %}Search Patient{% endblock %}
+{% block content %}
+<div class="row mb-6"><div class="col-12"><div class="card card-lg"><div class="card-body p-6">
+    <div class="text-center mb-4"><h4>Search Patient</h4><p class="text-secondary">Search by Patient ID, Name, or Phone Number</p></div>
+    <form method="get" class="d-flex gap-3 justify-content-center">
+        <input type="text" class="form-control form-control-lg" name="q" value="{{ query }}" placeholder="Enter Patient ID, Name, or Phone..."/>
+        <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i> Search</button>
+    </form>
+</div></div></div></div>
+
+{% if results %}
+<div class="row"><div class="col-12"><div class="card"><div class="card-header"><h5 class="mb-0">Search Results ({{ results|length }})</h5></div>
+<div class="card-body"><div class="table-responsive"><table class="table table-hover"><thead><tr><th>Patient ID</th><th>Name</th><th>Phone</th><th>Age</th><th>Gender</th><th>Actions</th></tr></thead><tbody>
+{% for p in results %}
+<tr><td>{{ p.patient_id }}</td><td>{{ p.full_name }}</td><td>{{ p.phone }}</td><td>{{ p.age_display }}</td><td>{{ p.gender }}</td>
+<td><a href="/patients/detail/{{ p.pk }}/" class="btn btn-sm btn-outline-primary">View Profile</a></td></tr>
+{% endfor %}
+</tbody></table></div></div></div></div></div>
+{% endif %}
+{% endblock %}

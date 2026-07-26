@@ -1,0 +1,26 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{{ action }} Department - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/departments/">Departments</a></li><li class="breadcrumb-item active">{{ action }}</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">{{ action }} Department</h4></div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>{% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Name</label><input type="text" class="form-control" name="name" value="{% if department %}{{ department.name }}{% endif %}" required/></div>
+                        <div class="col-md-6"><label class="form-label">Consultation Fee (Rs.)</label><input type="number" class="form-control" name="consultation_fee" value="{% if department %}{{ department.consultation_fee }}{% else %}0{% endif %}" step="0.01"/></div>
+                        <div class="col-md-12"><label class="form-label">Description</label><textarea class="form-control" name="description" rows="3">{% if department %}{{ department.description }}{% endif %}</textarea></div>
+                        <div class="col-md-12"><label class="form-label">Photo</label><input type="file" class="form-control" name="photo"/></div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>Save</button>
+                            <a href="/departments/" class="btn btn-white ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

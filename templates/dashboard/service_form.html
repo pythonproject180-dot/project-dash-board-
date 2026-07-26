@@ -1,0 +1,26 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Add Service - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/billing/services/">Services</a></li><li class="breadcrumb-item active">Add Service</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">Add Hospital Service</h4></div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>{% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6"><label class="form-label">Code</label><input type="text" class="form-control" name="code" required/></div>
+                        <div class="col-md-6"><label class="form-label">Name</label><input type="text" class="form-control" name="name" required/></div>
+                        <div class="col-md-6"><label class="form-label">Department</label><select class="form-select" name="department">{% for d in departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}</select></div>
+                        <div class="col-md-6"><label class="form-label">Price (Rs.)</label><input type="number" class="form-control" name="price" required step="0.01"/></div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>Save</button>
+                            <a href="/billing/services/" class="btn btn-white ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

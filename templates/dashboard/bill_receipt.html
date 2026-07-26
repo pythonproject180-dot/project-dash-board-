@@ -1,0 +1,214 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Bill Receipt - {{ bill.bill_id }}{% endblock %}
+{% block breadcrumb %}Bill Receipt{% endblock %}
+{% block extra_css %}
+<style>
+    @media print {
+        body * { visibility: hidden; }
+        .print-area, .print-area * { visibility: visible; }
+        .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+        .no-print { display: none !important; }
+        .sidebar, .topbar, #miniSidebar { display: none !important; }
+    }
+    .receipt-box {
+        border: 2px solid #1e293b;
+        border-radius: 8px;
+        max-width: 420px;
+        margin: 0 auto;
+        font-family: 'Public Sans', sans-serif;
+    }
+    .receipt-header {
+        background: linear-gradient(135deg, #6C63FF 0%, #4F46E5 100%);
+        color: white;
+        padding: 16px;
+        border-radius: 6px 6px 0 0;
+        text-align: center;
+    }
+    .receipt-divider {
+        border: 0;
+        border-top: 2px dashed #d1d5db;
+        margin: 0 16px;
+    }
+    .receipt-body { padding: 16px; }
+    .receipt-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 6px 0;
+        font-size: 0.85rem;
+    }
+    .receipt-label { color: #6b7280; font-weight: 500; }
+    .receipt-value { color: #1e293b; font-weight: 600; }
+    .receipt-services {
+        margin: 8px 0;
+        padding: 8px;
+        background: #f8fafc;
+        border-radius: 6px;
+    }
+    .receipt-service-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.8rem;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .receipt-total {
+        background: #1e293b;
+        color: white;
+        padding: 12px 16px;
+        border-radius: 0 0 6px 6px;
+    }
+    .receipt-total-row {
+        display: flex;
+        justify-content: space-between;
+        padding: 4px 0;
+        font-size: 0.85rem;
+    }
+    .receipt-qr-barcode {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 16px;
+        padding: 12px;
+        background: white;
+    }
+</style>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-xl-6">
+<div class="print-area">
+<div class="receipt-box">
+    <!-- HEADER -->
+    <div class="receipt-header">
+        <img src="/static/images/brand/logo/hamro-hospital-logo.jpg" alt="Hamro Hospital" style="height:32px;border-radius:6px;margin-bottom:6px"/>
+        <h2 style="margin:0;font-weight:700;font-size:1.2rem">HAMRO HOSPITAL</h2>
+        <p style="margin:2px 0 0;font-size:0.7rem;opacity:0.9">Kathmandu, Nepal • 24/7 Emergency • +977-01-XXXXXXX</p>
+    </div>
+
+    <!-- QR + Barcode section -->
+    <div class="receipt-qr-barcode">
+        {% if bill.patient.qr_code %}
+        <div style="text-align:center">
+            <img src="{{ bill.patient.qr_code.url }}" alt="QR" style="width:80px;height:80px;border:1px solid #e5e7eb;border-radius:4px"/>
+            <p style="font-size:0.65rem;color:#9ca3af;margin-top:2px">QR Code</p>
+        </div>
+        {% endif %}
+        <div style="text-align:center">
+            <div style="background:#1e293b;color:white;padding:4px 12px;border-radius:4px;font-size:0.9rem;font-weight:700;font-family:monospace">{{ bill.bill_id }}</div>
+            <p style="font-size:0.65rem;color:#9ca3af;margin-top:2px">Bill Number</p>
+        </div>
+    </div>
+
+    <hr class="receipt-divider"/>
+
+    <!-- Patient Info -->
+    <div class="receipt-body">
+        <div class="receipt-row">
+            <span class="receipt-label">Patient Name</span>
+            <span class="receipt-value">{{ bill.patient.full_name }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Phone Number</span>
+            <span class="receipt-value">{{ bill.patient.phone }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Patient ID</span>
+            <span class="receipt-value">{{ bill.patient.patient_id }}</span>
+        </div>
+        {% if bill.services.first %}
+        {% for svc in bill.services.all %}
+        {% empty %}
+        {% endfor %}
+        {% endif %}
+        <div class="receipt-row">
+            <span class="receipt-label">Department</span>
+            <span class="receipt-value">{{ bill.patient.patient_id }}</span>
+        </div>
+
+        <!-- Services List -->
+        <div class="receipt-services">
+            <div style="font-weight:600;font-size:0.85rem;margin-bottom:6px;color:#4F46E5">Services Rendered</div>
+            {% for svc in bill.services.all %}
+            <div class="receipt-service-row">
+                <span>{{ svc.name }} ({{ svc.code }})</span>
+                <span style="font-weight:600">NPR {{ svc.price }}</span>
+            </div>
+            {% endfor %}
+            {% if not bill.services.all %}
+            <div class="receipt-service-row">
+                <span>General Consultation</span>
+                <span style="font-weight:600">NPR {{ bill.total_amount }}</span>
+            </div>
+            {% endif %}
+        </div>
+
+        <!-- Payment Info -->
+        <div class="receipt-row">
+            <span class="receipt-label">Counter Name</span>
+            <span class="receipt-value">{{ bill.counter_name|default:"Cash Counter" }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Counter Staff</span>
+            <span class="receipt-value">{{ bill.created_by.first_name|default:bill.created_by.username|default:"Staff" }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Payment Method</span>
+            <span class="receipt-value">{{ bill.payment_method }}</span>
+        </div>
+        <div class="receipt-row">
+            <span class="receipt-label">Date & Time</span>
+            <span class="receipt-value">{{ bill.created_at|date:"Y-m-d H:i" }}</span>
+        </div>
+    </div>
+
+    <!-- TOTAL Section -->
+    <div class="receipt-total">
+        <div class="receipt-total-row">
+            <span>Total Amount</span>
+            <span style="font-weight:600">NPR {{ bill.total_amount }}</span>
+        </div>
+        <div class="receipt-total-row">
+            <span>Discount</span>
+            <span>- NPR {{ bill.discount }}</span>
+        </div>
+        {% if bill.insurance_coverage > 0 %}
+        <div class="receipt-total-row">
+            <span>Insurance Coverage</span>
+            <span>- NPR {{ bill.insurance_coverage }}</span>
+        </div>
+        {% endif %}
+        <div class="receipt-total-row" style="font-size:1.2rem;font-weight:800;border-top:1px solid rgba(255,255,255,0.3);padding-top:8px;margin-top:4px">
+            <span>FINAL AMOUNT PAID</span>
+            <span>NPR {{ bill.final_amount }}</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div style="text-align:center;padding:8px;font-size:0.65rem;color:#9ca3af;background:white;border-top:1px solid #e5e7eb">
+        <p style="margin:0">This receipt is valid for hospital records • Retain for insurance claims</p>
+        <p style="margin:2px 0 0">Hamro Hospital Management System • Computer-generated receipt</p>
+    </div>
+</div>
+
+<!-- Navigation + Print -->
+<div class="d-flex justify-content-center gap-2 mt-4 no-print">
+    <button class="btn btn-primary" onclick="window.print()">
+        <i class="ti ti-printer me-1"></i> Print Receipt
+    </button>
+    <a href="/patients/bill-pdf/{{ bill.pk }}/" class="btn btn-outline-primary">
+        <i class="ti ti-file-text me-1"></i> Download PDF
+    </a>
+    <a href="/billing/create/" class="btn btn-outline-warning">
+        <i class="ti ti-receipt me-1"></i> New Bill
+    </a>
+    <a href="/patients/detail/{{ bill.patient.pk }}/" class="btn btn-outline-info">
+        <i class="ti ti-user me-1"></i> Patient Profile
+    </a>
+    <a href="/patients/patient-card/{{ bill.patient.pk }}/" class="btn btn-outline-success">
+        <i class="ti ti-id-card me-1"></i> Patient Card
+    </a>
+    <a href="{{ user.get_dashboard_url }}" class="btn btn-outline-secondary">
+        <i class="ti ti-home-2 me-1"></i> Dashboard
+    </a>
+</div>
+</div></div></div>
+{% endblock %}

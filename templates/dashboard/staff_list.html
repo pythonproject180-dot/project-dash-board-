@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Staff List - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/accounts/dashboard/super-admin/">Super Admin</a></li><li class="breadcrumb-item active">Staff List</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Staff Management</h4>
+                <a href="/accounts/staff/add/" class="btn btn-primary"><i class="ti ti-user-plus me-1"></i>Add Staff</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Name</th>
+                                <th>Username</th>
+                                <th>Role</th>
+                                <th>Phone</th>
+                                <th>Status</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for s in staff %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>{{ s.first_name }} {{ s.last_name }}</td>
+                                <td>{{ s.username }}</td>
+                                <td><span class="badge bg-primary-subtle text-primary-emphasis">{{ s.role_display|default:s.role }}</span></td>
+                                <td>{{ s.phone|default:"—" }}</td>
+                                <td>
+                                    {% if s.is_active_staff %}
+                                    <span class="badge bg-success-subtle text-success-emphasis">Active</span>
+                                    {% else %}
+                                    <span class="badge bg-danger-subtle text-danger-emphasis">Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center text-secondary py-4">No staff members found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

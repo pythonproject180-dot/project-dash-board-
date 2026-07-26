@@ -1,0 +1,140 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Patient Detail - {{ patient.full_name }} - Hamro Hospital{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/patients/list/">Patients</a></li>
+<li class="breadcrumb-item active">{{ patient.patient_id }}</li>
+{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-4">
+        <div class="card">
+            <div class="card-body text-center">
+                {% if patient.photo %}
+                <img src="{{ patient.photo.url }}" alt="{{ patient.full_name }}" class="avatar avatar-xl rounded-circle mb-3"/>
+                {% else %}
+                <div class="avatar avatar-xl rounded-circle bg-primary text-white d-flex align-items-center justify-content-center mb-3 fs-3" style="width:80px;height:80px">{{ patient.full_name|make_list|first|upper }}</div>
+                {% endif %}
+                <h4>{{ patient.full_name }}</h4>
+                <p class="text-secondary">{{ patient.patient_id }}</p>
+                {% if patient.qr_code %}
+                <img src="{{ patient.qr_code.url }}" alt="QR" style="width:120px;height:120px"/>
+                {% endif %}
+                <div class="d-flex gap-2 justify-content-center mt-3">
+                    <a href="/patients/patient-card/{{ patient.pk }}/" class="btn btn-primary btn-sm"><i class="ti ti-id-card me-1"></i>Patient Card</a>
+                    <a href="/billing/create/?patient={{ patient.pk }}" class="btn btn-white btn-sm"><i class="ti ti-receipt me-1"></i>Create Bill</a>
+                </div>
+            </div>
+        </div>
+        <div class="card mt-6">
+            <div class="card-body">
+                <h5 class="mb-3">Patient Information</h5>
+                <div class="row g-2">
+                    <div class="col-6"><small class="text-secondary">Age</small><div>{{ patient.age_display }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Gender</small><div>{{ patient.gender }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Phone</small><div>{{ patient.phone }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Blood Group</small><div>{{ patient.blood_group|default:"—" }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Email</small><div>{{ patient.email|default:"—" }}</div></div>
+                    <div class="col-6"><small class="text-secondary">Address</small><div>{{ patient.address_display|default:"—" }}</div></div>
+                    <div class="col-12"><small class="text-secondary">Emergency Contact</small><div>{{ patient.emergency_contact_name|default:"—" }} {{ patient.emergency_contact_phone|default:"" }} {% if patient.emergency_contact_relation %}({{ patient.emergency_contact_relation }}){% endif %}</div></div>
+                    <div class="col-12"><small class="text-secondary">Allergies</small><div>{{ patient.allergies|default:"—" }}</div></div>
+                    <div class="col-12"><small class="text-secondary">Chronic Conditions</small><div>{{ patient.chronic_conditions|default:"—" }}</div></div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-xl-8">
+        <!-- OPD Visits -->
+        <div class="card mb-6">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h5 class="mb-0">OPD Visits</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm table-hover">
+                        <thead><tr><th>Token</th><th>Date</th><th>Department</th><th>Doctor</th><th>Status</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {% for v in visits %}
+                            <tr>
+                                <td>{{ v.token_number }}</td>
+                                <td>{{ v.visit_date|date:"Y-m-d H:i" }}</td>
+                                <td>{{ v.department|default:"—" }}</td>
+                                <td>{{ v.doctor|default:"—" }}</td>
+                                <td>{{ v.status }}</td>
+                                <td>
+                                    {% if v.status == 'waiting' %}
+                                    <a href="/consultation/create/{{ v.pk }}/" class="btn btn-sm btn-primary">Consult</a>
+                                    {% elif v.status == 'in_progress' %}
+                                    <a href="/consultation/create/{{ v.pk }}/" class="btn btn-sm btn-warning">Continue</a>
+                                    {% else %}
+                                    <span class="text-secondary small">Done</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center text-secondary">No OPD visits.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        <!-- Bills -->
+        <div class="card mb-6">
+            <div class="card-header"><h5 class="mb-0">Bills</h5></div>
+            <div class="card-body">
+                {% for bill in bills %}
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>{{ bill.bill_id }} — {{ bill.created_at|date:"Y-m-d" }}</div>
+                    <div>Rs. {{ bill.final_amount }} <span class="badge bg-{% if bill.status == 'paid' %}success{% elif bill.status == 'pending' %}warning{% else %}danger{% endif %}-subtle">{{ bill.status }}</span></div>
+                    <a href="/billing/detail/{{ bill.pk }}/" class="btn btn-sm btn-white">View</a>
+                </div>
+                {% empty %}
+                <div class="text-center text-secondary py-3">No bills.</div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Admissions -->
+        <div class="card mb-6">
+            <div class="card-header"><h5 class="mb-0">Admissions</h5></div>
+            <div class="card-body">
+                {% for adm in admissions %}
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>{{ adm.admission_id }} — {{ adm.ward|default:"—" }}</div>
+                    <div>{{ adm.admission_date|date:"Y-m-d" }} <span class="badge bg-info-subtle">{{ adm.status }}</span></div>
+                </div>
+                {% empty %}
+                <div class="text-center text-secondary py-3">No admissions.</div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Lab Reports -->
+        <div class="card mb-6">
+            <div class="card-header"><h5 class="mb-0">Lab Reports</h5></div>
+            <div class="card-body">
+                {% for lab in lab_results %}
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>{{ lab.test_name }}</div>
+                    <div>{{ lab.created_at|date:"Y-m-d" }} <span class="badge bg-success-subtle">{{ lab.status }}</span></div>
+                </div>
+                {% empty %}
+                <div class="text-center text-secondary py-3">No lab reports.</div>
+                {% endfor %}
+            </div>
+        </div>
+        <!-- Pharmacy Sales -->
+        <div class="card mb-6">
+            <div class="card-header"><h5 class="mb-0">Pharmacy</h5></div>
+            <div class="card-body">
+                {% for sale in pharmacy %}
+                <div class="d-flex justify-content-between align-items-center border-bottom py-2">
+                    <div>{{ sale.sale_id }}</div>
+                    <div>Rs. {{ sale.final_amount }} — {{ sale.sale_date|date:"Y-m-d" }}</div>
+                </div>
+                {% empty %}
+                <div class="text-center text-secondary py-3">No pharmacy sales.</div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,57 @@
+<!DOCTYPE html><html lang="en" data-bs-theme="light"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Patient Portal Signup - Hamro Hospital</title>
+<link href="/static/css/bootstrap.min.css" rel="stylesheet"/><link href="/static/css/all.min.css" rel="stylesheet"/><link href="/static/css/style.css" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+</head><body><div id="landing" style="min-height:100vh;display:flex;align-items:center">
+<div class="container"><div class="row justify-content-center"><div class="col-md-6">
+<div class="gc p-5"><div class="text-center mb-4">
+<div class="logo-i" style="font-size:1.5rem"><i class="fa-solid fa-hospital"></i></div>
+<h3 style="font-weight:700">Patient Portal Signup</h3>
+<p style="color:var(--tx2)">Create your patient portal account</p>
+</div>
+
+{% if error %}
+<div class="alert alert-danger"><i class="fa-solid fa-exclamation-triangle me-2"></i>{{ error }}</div>
+{% endif %}
+
+<!-- Step 1: Verify Hospital ID + Phone -->
+{% if step == '1' or not step %}
+<form method="post">{% csrf_token %}
+<input type="hidden" name="step" value="1"/>
+<div class="mb-3"><label class="form-label fw-bold">Hospital ID *</label><input type="text" class="form-control" name="hospital_id" placeholder="e.g. HT-000001" required value="{{ hospital_id|default:'' }}"/></div>
+<div class="mb-3"><label class="form-label fw-bold">Phone Number (on your record) *</label><input type="text" class="form-control" name="phone" placeholder="+977-98XXXXXXXX" required/></div>
+<button class="bgrd btn w-100 py-2" type="submit"><i class="fa-solid fa-check me-2"></i>Verify Identity</button>
+</form>
+<p style="text-align:center;margin-top:16px;color:var(--tx2);font-size:.85rem">
+<a href="/portal/login/" style="color:var(--pur)">Already have an account? Login</a> | <a href="/" style="color:var(--tx3)">Back to website</a>
+</p>
+{% endif %}
+
+<!-- Step 2: OTP Verification -->
+{% if step == '2' %}
+<div class="alert alert-info mb-4"><i class="fa-solid fa-mobile-screen me-2"></i>OTP sent to phone: <strong>{{ phone }}</strong></div>
+{% if otp_hint %}<div class="alert alert-warning"><i class="fa-solid fa-info-circle me-2"></i>{{ otp_hint }}</div>{% endif %}
+
+<h5 class="text-center mb-3" style="font-weight:600">Verified: {{ patient_name }} ({{ hospital_id }})</h5>
+<form method="post">{% csrf_token %}
+<input type="hidden" name="step" value="2"/>
+<div class="mb-3"><label class="form-label fw-bold">Enter OTP *</label><input type="text" class="form-control form-control-lg text-center" name="otp" placeholder="6-digit OTP" required maxlength="6" pattern="[0-9]{6}"/></div>
+<button class="bgrd btn w-100 py-2" type="submit"><i class="fa-solid fa-shield me-2"></i>Verify OTP</button>
+</form>
+{% endif %}
+
+<!-- Step 3: Set Password -->
+{% if step == '3' %}
+<div class="alert alert-success mb-4"><i class="fa-solid fa-check-circle me-2"></i>OTP verified! Set your password to complete signup.</div>
+<h5 class="text-center mb-3" style="font-weight:600">Account for: {{ patient_name }} ({{ hospital_id }})</h5>
+<form method="post">{% csrf_token %}
+<input type="hidden" name="step" value="3"/>
+<input type="hidden" name="patient_pk" value="{{ patient_pk }}"/>
+<div class="mb-3"><label class="form-label fw-bold">Password *</label><input type="password" class="form-control" name="password" placeholder="Choose a password" required minlength="6"/></div>
+<div class="mb-3"><label class="form-label fw-bold">Confirm Password *</label><input type="password" class="form-control" name="confirm_password" placeholder="Confirm your password" required minlength="6"/></div>
+<button class="bgrd btn w-100 py-2" type="submit"><i class="fa-solid fa-lock me-2"></i>Create Account</button>
+</form>
+{% endif %}
+
+</div></div></div></div></div>
+<script src="/static/js/website-theme.js"></script>
+</body></html>

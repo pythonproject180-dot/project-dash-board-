@@ -1,0 +1,40 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Review Claim - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/insurance/">Insurance</a></li><li class="breadcrumb-item active">Review Claim</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Review Claim — {{ claim.claim_id }}</h4>
+                <a href="/insurance/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back</a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><strong>Claim ID:</strong> {{ claim.claim_id }}</div>
+                    <div class="col-md-4"><strong>Patient:</strong> <a href="/patients/detail/{{ claim.patient.pk }}/">{{ claim.patient.full_name }}</a></div>
+                    <div class="col-md-4"><strong>Status:</strong> {{ claim.status }}</div>
+                    <div class="col-md-4"><strong>Amount:</strong> Rs. {{ claim.amount }}</div>
+                    <div class="col-md-4"><strong>Insurance:</strong> {{ claim.insurance|default:"—" }}</div>
+                    <div class="col-md-12"><strong>Notes:</strong> {{ claim.notes|default:"—" }}</div>
+                </div>
+                {% if claim.status == 'pending' %}
+                <form method="post">{% csrf_token %}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4"><label class="form-label">Approved Amount</label><input type="number" class="form-control" name="approved_amount" value="{{ claim.amount }}"/></div>
+                    </div>
+                    <button type="submit" name="action" value="approve" class="btn btn-success"><i class="ti ti-check me-1"></i>Approve</button>
+                    <button type="submit" name="action" value="reject" class="btn btn-danger ms-2"><i class="ti ti-x me-1"></i>Reject</button>
+                </form>
+                {% elif claim.status == 'approved' %}
+                <form method="post">{% csrf_token %}
+                    <button type="submit" name="action" value="settle" class="btn btn-primary"><i class="ti ti-check me-1"></i>Mark as Settled</button>
+                </form>
+                {% else %}
+                <div class="alert alert-{% if claim.status == 'rejected' %}danger{% else %}success{% endif %}">This claim has been {{ claim.status }}.</div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

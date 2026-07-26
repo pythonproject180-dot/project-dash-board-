@@ -1,0 +1,122 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Register Patient - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/patients/dashboard/">Registration</a></li><li class="breadcrumb-item active">Register Patient</li>{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-xl-10 col-lg-12">
+    {% if error %}
+    <div class="alert alert-danger mb-4"><i class="fas fa-exclamation-triangle me-2"></i>{{ error }}</div>
+    {% endif %}
+
+    <div class="card card-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-hospital-user me-2"></i>Register New Patient</h5>
+            <a href="/patients/dashboard/" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back to Dashboard</a>
+        </div>
+        <div class="card-body p-6">
+            <form method="post" enctype="multipart/form-data">{% csrf_token %}
+                <!-- Personal Information -->
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-user me-1"></i>Personal Information</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><label class="form-label">First Name *</label><input type="text" class="form-control" name="first_name" required/></div>
+                    <div class="col-md-4"><label class="form-label">Last Name *</label><input type="text" class="form-control" name="last_name" required/></div>
+                    <div class="col-md-2"><label class="form-label">Age *</label><input type="number" class="form-control" name="age_value" required min="0"/></div>
+                    <div class="col-md-2"><label class="form-label">Age Type *</label>
+                        <select class="form-select" name="age_type">
+                            <option value="years">Years</option>
+                            <option value="months">Months</option>
+                            <option value="weeks">Weeks</option>
+                            <option value="days">Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Date of Birth</label><input type="date" class="form-control" name="date_of_birth"/></div>
+                    <div class="col-md-3"><label class="form-label">Gender *</label>
+                        <select class="form-select" name="gender" required>
+                            <option value="">-- Select --</option>
+                            <option value="Male">Male</option>
+                            <option value="Female">Female</option>
+                            <option value="Other">Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Blood Group</label>
+                        <select class="form-select" name="blood_group">
+                            <option value="">-- Select --</option>
+                            <option>A+</option><option>A-</option><option>B+</option><option>B-</option>
+                            <option>AB+</option><option>AB-</option><option>O+</option><option>O-</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Contact Information -->
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-phone me-1"></i>Contact Information</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><label class="form-label">Phone Number *</label><input type="text" class="form-control" name="phone" required placeholder="+977-98XXXXXXXX"/></div>
+                    <div class="col-md-4"><label class="form-label">Email</label><input type="email" class="form-control" name="email"/></div>
+                    <div class="col-md-4"><label class="form-label">Address</label><input type="text" class="form-control" name="address_line"/></div>
+                    <div class="col-md-3"><label class="form-label">Province</label>
+                        <select class="form-select" name="province">{% for p in provinces %}<option value="{{ p.pk }}">{{ p.name }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">District</label>
+                        <select class="form-select" name="district">{% for d in districts %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Municipality</label><input type="text" class="form-control" name="municipality"/></div>
+                    <div class="col-md-1"><label class="form-label">Ward</label><input type="text" class="form-control" name="ward"/></div>
+                    <div class="col-md-2"><label class="form-label">Tole</label><input type="text" class="form-control" name="tole"/></div>
+                </div>
+
+                <!-- Emergency Contact -->
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-exclamation-triangle me-1"></i>Emergency Contact</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><label class="form-label">Contact Name</label><input type="text" class="form-control" name="emergency_contact_name"/></div>
+                    <div class="col-md-4"><label class="form-label">Contact Phone</label><input type="text" class="form-control" name="emergency_contact_phone"/></div>
+                    <div class="col-md-4"><label class="form-label">Relation</label><input type="text" class="form-control" name="emergency_contact_relation" placeholder="e.g., Father, Spouse"/></div>
+                </div>
+
+                <!-- Medical Information -->
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-notes-medical me-1"></i>Medical Information</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6"><label class="form-label">Allergies</label><input type="text" class="form-control" name="allergies"/></div>
+                    <div class="col-md-6"><label class="form-label">Chronic Conditions</label><input type="text" class="form-control" name="chronic_conditions"/></div>
+                    <div class="col-md-6"><label class="form-label">Photo</label><input type="file" class="form-control" name="photo"/></div>
+                </div>
+
+                <!-- OPD Visit Information -->
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-ticket me-1"></i>OPD Visit / Registration</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><label class="form-label">Department *</label>
+                        <select class="form-select" name="department" required>{% for d in departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Doctor</label>
+                        <select class="form-select" name="doctor">{% for d in doctors %}<option value="{{ d.pk }}">Dr. {{ d.name }} ({{ d.department.name }})</option>{% endfor %}</select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Payment Method *</label>
+                        <select class="form-select" name="payment_method">
+                            <option value="cash">Cash</option>
+                            <option value="esewa">eSewa</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label class="form-label">Registration Fee</label>
+                        <div class="form-control-plaintext fw-bold text-success">New: NPR 100 | Old: NPR 50</div>
+                    </div>
+                </div>
+
+                <!-- Doctor Quota Info -->
+                {% if doctor_quotas %}
+                <div class="alert alert-info mb-4">
+                    <i class="fas fa-info-circle me-2"></i><strong>Doctor Quota Status Today:</strong>
+                    <ul class="mt-2">
+                        {% for q in doctor_quotas %}
+                        <li>Dr. {{ q.doctor.name }} — {{ q.available_slots }} slots available (Max: {{ q.max_patients }})</li>
+                        {% endfor %}
+                    </ul>
+                </div>
+                {% endif %}
+
+                <div class="d-grid mt-4">
+                    <button class="btn btn-primary btn-lg" type="submit"><i class="fas fa-plus-circle me-2"></i>Register Patient & Generate OPD Ticket</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div></div>
+{% endblock %}

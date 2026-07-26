@@ -1,0 +1,49 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Laboratory Dashboard - Hamro Hospital{% endblock %}
+{% block breadcrumb %}Laboratory{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8 col-lg-6">
+        <div class="bg-gradient-mixed p-8 py-10 rounded-3 p-lg-7">
+            <h1 class="fs-3">👋 Hello {{ user.first_name|default:"Lab Staff" }}</h1>
+            <p class="mb-0">Welcome to the Laboratory Dashboard!</p>
+            <p>{{ pending }} pending requests, {{ urgent }} urgent cases today.</p>
+            <a href="/laboratory/queue/" class="btn btn-dark">View Lab Queue</a>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6">
+        <div class="card card-lg"><div class="card-body">
+            <h5 class="mb-3">Search Patient</h5>
+            <form action="/laboratory/search/" method="get" class="d-flex gap-2">
+                <input type="text" class="form-control" name="q" placeholder="Patient ID, Name, Phone..."/>
+                <button class="btn btn-primary" type="submit"><i class="ti ti-search"></i></button>
+            </form>
+        </div></div>
+    </div>
+</div>
+
+<div class="row row-cols-1 row-cols-xl-4 row-cols-md-4 mb-6 g-6">
+    <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg></div><div>Pending</div></div>
+        <div class="fs-3 fw-bold">{{ pending }}</div>
+    </div></div></div>
+    <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg></div><div>Completed Today</div></div>
+        <div class="fs-3 fw-bold">{{ completed_today }}</div>
+    </div></div></div>
+    <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg></div><div>Urgent</div></div>
+        <div class="fs-3 fw-bold">{{ urgent }}</div>
+    </div></div></div>
+    <div class="col"><div class="card card-lg"><div class="card-body d-flex flex-column gap-8">
+        <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/></svg></div><div>Testing</div></div>
+        <div class="fs-3 fw-bold">{{ testing }}</div>
+    </div></div></div>
+</div>
+
+<div class="row mb-6"><div class="col-12"><div class="card"><div class="card-header"><h5 class="mb-0">Recent Completed Reports</h5></div>
+<div class="card-body"><div class="table-responsive"><table class="table"><thead><tr><th>Patient</th><th>Test</th><th>Status</th><th>Completed</th></tr></thead><tbody>
+{% for r in recent %}<tr><td>{{ r.patient.full_name }}</td><td>{{ r.test_name }}</td><td><span class="badge text-success-emphasis bg-success-subtle">Completed</span></td><td>{{ r.completed_at }}</td></tr>{% endfor %}
+{% if not recent %}<tr><td colspan="4" class="text-center">No recent reports</td></tr>{% endif %}
+</tbody></table></div></div></div></div></div>
+{% endblock %}

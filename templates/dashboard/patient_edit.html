@@ -1,0 +1,117 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Edit Patient - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/patients/list/">Patients</a></li><li class="breadcrumb-item active">Edit Patient</li>{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-xl-10 col-lg-12">
+    {% if error %}
+    <div class="alert alert-danger mb-4">
+        <i class="fas fa-exclamation-triangle me-2"></i>{{ error }}
+        <hr>
+        <p class="mb-0">Time since registration: <strong>{{ hours_since_creation|floatformat:1 }} hours</strong></p>
+        <p class="mb-0">Contact Super Admin to modify this record.</p>
+    </div>
+    {% endif %}
+
+    <div class="card card-lg">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0"><i class="fas fa-user-edit me-2"></i>Edit Patient: {{ patient.patient_id }}</h5>
+            <div>
+                <a href="/patients/detail/{{ patient.pk }}/" class="btn btn-outline-primary me-2"><i class="fas fa-eye me-1"></i>View Patient</a>
+                <a href="/patients/dashboard/" class="btn btn-outline-secondary"><i class="fas fa-arrow-left me-1"></i>Back</a>
+            </div>
+        </div>
+        <div class="card-body p-6">
+            {% if can_edit %}
+            <!-- Time restriction notice -->
+            <div class="alert alert-info mb-4">
+                <i class="fas fa-clock me-2"></i>
+                <strong>Edit allowed:</strong> This patient was registered {{ hours_since_creation|floatformat:1 }} hours ago.
+                {% if hours_since_creation <= 24 %}
+                You can edit within the 24-hour window.
+                {% elif role == 'super_admin' %}
+                Super Admin can edit anytime.
+                {% endif %}
+            </div>
+
+            <form method="post" enctype="multipart/form-data">{% csrf_token %}
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-user me-1"></i>Personal Information</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><label class="form-label">First Name *</label><input type="text" class="form-control" name="first_name" value="{{ patient.first_name }}" required/></div>
+                    <div class="col-md-4"><label class="form-label">Last Name *</label><input type="text" class="form-control" name="last_name" value="{{ patient.last_name }}" required/></div>
+                    <div class="col-md-2"><label class="form-label">Age *</label><input type="number" class="form-control" name="age_value" value="{{ patient.age_value }}" required/></div>
+                    <div class="col-md-2"><label class="form-label">Age Type</label>
+                        <select class="form-select" name="age_type">
+                            <option value="years" {% if patient.age_type == 'years' %}selected{% endif %}>Years</option>
+                            <option value="months" {% if patient.age_type == 'months' %}selected{% endif %}>Months</option>
+                            <option value="weeks" {% if patient.age_type == 'weeks' %}selected{% endif %}>Weeks</option>
+                            <option value="days" {% if patient.age_type == 'days' %}selected{% endif %}>Days</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Gender</label>
+                        <select class="form-select" name="gender">
+                            <option value="Male" {% if patient.gender == 'Male' %}selected{% endif %}>Male</option>
+                            <option value="Female" {% if patient.gender == 'Female' %}selected{% endif %}>Female</option>
+                            <option value="Other" {% if patient.gender == 'Other' %}selected{% endif %}>Other</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Blood Group</label>
+                        <select class="form-select" name="blood_group">
+                            <option value="">--</option>
+                            <option value="A+" {% if patient.blood_group == 'A+' %}selected{% endif %}>A+</option>
+                            <option value="A-" {% if patient.blood_group == 'A-' %}selected{% endif %}>A-</option>
+                            <option value="B+" {% if patient.blood_group == 'B+' %}selected{% endif %}>B+</option>
+                            <option value="B-" {% if patient.blood_group == 'B-' %}selected{% endif %}>B-</option>
+                            <option value="AB+" {% if patient.blood_group == 'AB+' %}selected{% endif %}>AB+</option>
+                            <option value="AB-" {% if patient.blood_group == 'AB-' %}selected{% endif %}>AB-</option>
+                            <option value="O+" {% if patient.blood_group == 'O+' %}selected{% endif %}>O+</option>
+                            <option value="O-" {% if patient.blood_group == 'O-' %}selected{% endif %}>O-</option>
+                        </select>
+                    </div>
+                    <div class="col-md-6"><label class="form-label">Phone</label><input type="text" class="form-control" name="phone" value="{{ patient.phone }}"/></div>
+                    <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" name="email" value="{{ patient.email|default:'' }}"/></div>
+                </div>
+
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-map-marker-alt me-1"></i>Address</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6"><label class="form-label">Address</label><input type="text" class="form-control" name="address_line" value="{{ patient.address_line|default:'' }}"/></div>
+                    <div class="col-md-3"><label class="form-label">Province</label>
+                        <select class="form-select" name="province">{% for p in provinces %}<option value="{{ p.pk }}" {% if patient.province and patient.province.pk == p.pk %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">District</label>
+                        <select class="form-select" name="district">{% for d in districts %}<option value="{{ d.pk }}" {% if patient.district and patient.district.pk == d.pk %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select>
+                    </div>
+                    <div class="col-md-3"><label class="form-label">Municipality</label><input type="text" class="form-control" name="municipality" value="{{ patient.municipality|default:'' }}"/></div>
+                    <div class="col-md-1"><label class="form-label">Ward</label><input type="text" class="form-control" name="ward" value="{{ patient.ward_number|default:'' }}"/></div>
+                    <div class="col-md-2"><label class="form-label">Tole</label><input type="text" class="form-control" name="tole" value="{{ patient.tole|default:'' }}"/></div>
+                </div>
+
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-exclamation-triangle me-1"></i>Emergency Contact</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-4"><label class="form-label">Contact Name</label><input type="text" class="form-control" name="emergency_contact_name" value="{{ patient.emergency_contact_name|default:'' }}"/></div>
+                    <div class="col-md-4"><label class="form-label">Contact Phone</label><input type="text" class="form-control" name="emergency_contact_phone" value="{{ patient.emergency_contact_phone|default:'' }}"/></div>
+                    <div class="col-md-4"><label class="form-label">Relation</label><input type="text" class="form-control" name="emergency_contact_relation" value="{{ patient.emergency_contact_relation|default:'' }}"/></div>
+                </div>
+
+                <h6 class="fw-bold text-primary mb-3"><i class="fas fa-notes-medical me-1"></i>Medical Info</h6>
+                <div class="row g-3 mb-4">
+                    <div class="col-md-6"><label class="form-label">Allergies</label><input type="text" class="form-control" name="allergies" value="{{ patient.allergies|default:'' }}"/></div>
+                    <div class="col-md-6"><label class="form-label">Chronic Conditions</label><input type="text" class="form-control" name="chronic_conditions" value="{{ patient.chronic_conditions|default:'' }}"/></div>
+                    <div class="col-md-6"><label class="form-label">Photo</label><input type="file" class="form-control" name="photo"/></div>
+                </div>
+
+                <div class="d-grid mt-4">
+                    <button class="btn btn-primary btn-lg" type="submit"><i class="fas fa-save me-2"></i>Save Changes</button>
+                </div>
+            </form>
+            {% else %}
+            <div class="text-center py-8">
+                <i class="fas fa-lock fa-3x text-muted mb-4"></i>
+                <h5>Edit Restricted</h5>
+                <p class="text-muted">{{ error }}</p>
+                <a href="/patients/detail/{{ patient.pk }}/" class="btn btn-outline-primary"><i class="fas fa-eye me-1"></i>View Patient Profile</a>
+            </div>
+            {% endif %}
+        </div>
+    </div>
+</div></div>
+{% endblock %}

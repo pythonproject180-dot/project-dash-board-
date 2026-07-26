@@ -1,0 +1,44 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Submit Insurance Claim - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/insurance/">Insurance</a></li><li class="breadcrumb-item active">Submit Claim</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">Submit Insurance Claim</h4></div>
+            <div class="card-body">
+                <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Patient</label>
+                            <select class="form-select" name="patient" required>
+                                <option value="">Select Patient</option>
+                                {% for p in patients %}
+                                <option value="{{ p.pk }}">{{ p.patient_id }} — {{ p.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Claim Amount (Rs.)</label>
+                            <input type="number" class="form-control" name="amount" required step="0.01"/>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Notes</label>
+                            <textarea class="form-control" name="notes" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Supporting Documents</label>
+                            <input type="file" class="form-control" name="documents"/>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-file-plus me-1"></i>Submit Claim</button>
+                            <a href="/insurance/" class="btn btn-white ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

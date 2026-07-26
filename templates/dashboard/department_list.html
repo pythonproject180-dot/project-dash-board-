@@ -1,0 +1,37 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Departments - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/accounts/dashboard/super-admin/">Admin</a></li><li class="breadcrumb-item active">Departments</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Department Management</h4>
+                <a href="/departments/add/" class="btn btn-primary"><i class="ti ti-plus me-1"></i>Add Department</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Name</th><th>Fee</th><th>Status</th><th>Actions</th></tr></thead>
+                        <tbody>
+                            {% for dept in departments %}
+                            <tr>
+                                <td>{{ dept.name }}</td>
+                                <td>Rs. {{ dept.consultation_fee }}</td>
+                                <td>{% if dept.is_active %}<span class="badge bg-success-subtle text-success-emphasis">Active</span>{% else %}<span class="badge bg-danger-subtle text-danger-emphasis">Inactive</span>{% endif %}</td>
+                                <td>
+                                    <a href="/departments/edit/{{ dept.pk }}/" class="btn btn-sm btn-white"><i class="ti ti-edit"></i></a>
+                                    <a href="/departments/delete/{{ dept.pk }}/" class="btn btn-sm btn-danger"><i class="ti ti-trash"></i></a>
+                                </td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="4" class="text-center text-secondary py-4">No departments found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

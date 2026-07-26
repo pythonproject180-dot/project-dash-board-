@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Discharge Patient - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/admissions/">Admissions</a></li><li class="breadcrumb-item active">Discharge</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Discharge — {{ admission.admission_id }}</h4>
+                <a href="/admissions/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back</a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><strong>Patient:</strong> <a href="/patients/detail/{{ admission.patient.pk }}/">{{ admission.patient.full_name }}</a></div>
+                    <div class="col-md-3"><strong>Admission ID:</strong> {{ admission.admission_id }}</div>
+                    <div class="col-md-3"><strong>Ward:</strong> {{ admission.ward|default:"—" }}</div>
+                    <div class="col-md-3"><strong>Bed:</strong> {{ admission.bed|default:"—" }}</div>
+                    <div class="col-md-3"><strong>Admitted:</strong> {{ admission.admission_date|date:"Y-m-d" }}</div>
+                    <div class="col-md-3"><strong>Diagnosis:</strong> {{ admission.diagnosis|default:"—" }}</div>
+                </div>
+                <form method="post">{% csrf_token %}
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-12">
+                            <label class="form-label">Treatment Summary</label>
+                            <textarea class="form-control" name="treatment" rows="4" placeholder="Enter discharge treatment summary...">{{ admission.treatment }}</textarea>
+                        </div>
+                    </div>
+                    <button type="submit" class="btn btn-success"><i class="ti ti-check me-1"></i>Confirm Discharge</button>
+                    <a href="/admissions/" class="btn btn-white ms-2">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

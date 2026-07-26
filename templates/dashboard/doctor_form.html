@@ -1,0 +1,20 @@
+{% extends "dashboard/base.html" %}
+{% block title %}{{ action }} Doctor - Hamro Hospital{% endblock %}
+{% block breadcrumb %}{{ action }} Doctor{% endblock %}
+{% block content %}
+<div class="row justify-content-center"><div class="col-xl-8"><div class="card card-lg"><div class="card-header"><h5 class="mb-0">{{ action }} Doctor</h5></div>
+<div class="card-body p-6"><form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="row g-3">
+        <div class="col-md-6"><label class="form-label">Doctor Name *</label><input type="text" class="form-control" name="name" value="{{ doctor.name|default:'' }}" required/></div>
+        <div class="col-md-6"><label class="form-label">Department *</label><select class="form-select" name="department">{% for d in departments %}<option value="{{ d.pk }}" {% if doctor.department.pk == d.pk %}selected{% endif %}>{{ d.name }}</option>{% endfor %}</select></div>
+        <div class="col-md-6"><label class="form-label">Qualification</label><input type="text" class="form-control" name="qualification" value="{{ doctor.qualification|default:'' }}"/></div>
+        <div class="col-md-6"><label class="form-label">Specialization</label><input type="text" class="form-control" name="specialization" value="{{ doctor.specialization|default:'' }}"/></div>
+        <div class="col-md-6"><label class="form-label">Consultation Fee (NPR)</label><input type="number" class="form-control" name="consultation_fee" value="{{ doctor.consultation_fee|default:'500' }}"/></div>
+        <div class="col-md-6"><label class="form-label">Phone</label><input type="text" class="form-control" name="phone" value="{{ doctor.phone|default:'' }}"/></div>
+        <div class="col-md-6"><label class="form-label">Email</label><input type="email" class="form-control" name="email" value="{{ doctor.email|default:'' }}"/></div>
+        <div class="col-md-6"><label class="form-label">Schedule</label><input type="text" class="form-control" name="schedule" value="{{ doctor.schedule|default:'' }}" placeholder="e.g. Mon-Fri 9AM-5PM"/></div>
+        <div class="col-md-6"><label class="form-label">Photo</label><input type="file" class="form-control" name="photo"/></div>
+    </div>
+    <button class="btn btn-primary mt-4" type="submit">Save Doctor</button>
+</form></div></div></div></div>
+{% endblock %}

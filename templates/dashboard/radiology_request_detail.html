@@ -1,0 +1,51 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Radiology Request Detail - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/radiology/">Radiology</a></li><li class="breadcrumb-item"><a href="/radiology/queue/">Queue</a></li><li class="breadcrumb-item active">Detail</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Radiology — {{ request.imaging_type }}</h4>
+                <a href="/radiology/queue/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back to Queue</a>
+            </div>
+            <div class="card-body">
+                <div class="row g-3 mb-4">
+                    <div class="col-md-3"><strong>Patient:</strong> <a href="/patients/detail/{{ request.patient.pk }}/">{{ request.patient.full_name }}</a></td>
+                    <div class="col-md-3"><strong>Type:</strong> {{ request.imaging_type }}</div>
+                    <div class="col-md-3"><strong>Priority:</strong> {{ request.priority }}</div>
+                    <div class="col-md-3"><strong>Status:</strong> {{ request.status }}</div>
+                    <div class="col-md-3"><strong>Doctor:</strong> {{ request.doctor|default:"—" }}</div>
+                    <div class="col-md-6"><strong>Clinical Note:</strong> {{ request.clinical_note|default:"—" }}</div>
+                </div>
+                {% if request.status == 'requested' %}
+                <form method="post">{% csrf_token %}
+                    <input type="hidden" name="action" value="schedule"/>
+                    <button type="submit" class="btn btn-success"><i class="ti ti-calendar me-1"></i>Schedule</button>
+                </form>
+                {% elif request.status == 'scheduled' %}
+                <form method="post">{% csrf_token %}
+                    <input type="hidden" name="action" value="start"/>
+                    <button type="submit" class="btn btn-info"><i class="ti ti-zap me-1"></i>Start</button>
+                </form>
+                {% elif request.status == 'in_progress' %}
+                <form method="post" enctype="multipart/form-data">{% csrf_token %}
+                    <input type="hidden" name="action" value="complete"/>
+                    <div class="row g-3 mb-3">
+                        <div class="col-md-4"><label class="form-label">Findings</label><textarea class="form-control" name="findings" rows="2"></textarea></div>
+                        <div class="col-md-4"><label class="form-label">Impression</label><textarea class="form-control" name="impression" rows="2"></textarea></div>
+                        <div class="col-md-4"><label class="form-label">Result Notes</label><textarea class="form-control" name="result_notes" rows="2"></textarea></div>
+                        <div class="col-md-12"><label class="form-label">Result File</label><input type="file" class="form-control" name="result_file"/></div>
+                    </div>
+                    <button type="submit" class="btn btn-primary"><i class="ti ti-check me-1"></i>Complete</button>
+                </form>
+                {% else %}
+                <div class="alert alert-success">Completed.</div>
+                {% if request.findings %}<p><strong>Findings:</strong> {{ request.findings }}</p>{% endif %}
+                {% if request.impression %}<p><strong>Impression:</strong> {{ request.impression }}</p>{% endif %}
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

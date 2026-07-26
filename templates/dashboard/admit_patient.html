@@ -1,0 +1,67 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Admit Patient - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/admissions/">Admissions</a></li><li class="breadcrumb-item active">Admit Patient</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">Admit Patient to Ward</h4></div>
+            <div class="card-body">
+                <form method="post" class="needs-validation" novalidate>
+                    {% csrf_token %}
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <label class="form-label">Patient</label>
+                            <select class="form-select" name="patient" required>
+                                <option value="">Select Patient</option>
+                                {% for p in patients %}
+                                <option value="{{ p.pk }}">{{ p.patient_id }} — {{ p.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Doctor</label>
+                            <select class="form-select" name="doctor" required>
+                                <option value="">Select Doctor</option>
+                                {% for d in doctors %}
+                                <option value="{{ d.pk }}">Dr. {{ d.name }} ({{ d.department }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Ward</label>
+                            <select class="form-select" name="ward" required>
+                                <option value="">Select Ward</option>
+                                {% for w in wards %}
+                                <option value="{{ w.pk }}">{{ w.name }} (Floor {{ w.floor }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Bed</label>
+                            <select class="form-select" name="bed" required>
+                                <option value="">Select Bed</option>
+                                {% for b in free_beds %}
+                                <option value="{{ b.pk }}">{{ b.ward.name }} — Bed {{ b.bed_number }} ({{ b.bed_type }})</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-12">
+                            <label class="form-label">Diagnosis</label>
+                            <textarea class="form-control" name="diagnosis" rows="3"></textarea>
+                        </div>
+                        <div class="col-md-6">
+                            <label class="form-label">Admission Fee (Rs.)</label>
+                            <input type="number" class="form-control" name="admission_fee" value="0"/>
+                        </div>
+                        <div class="col-12 mt-4">
+                            <button type="submit" class="btn btn-primary"><i class="ti ti-bed me-1"></i>Admit Patient</button>
+                            <a href="/admissions/" class="btn btn-white ms-2">Cancel</a>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "dashboard/base.html" %}
+{% block title %}OPD Ticket - {{ patient.patient_id }}{% endblock %}
+{% block breadcrumb %}OPD Ticket{% endblock %}
+{% block extra_css %}
+<style>
+@media print {
+    body * { visibility: hidden; }
+    .print-area, .print-area * { visibility: visible; }
+    .print-area { position: absolute; left: 0; top: 0; width: 100%; }
+    .no-print { display: none !important; }
+    .sidebar, .topbar, #miniSidebar { display: none !important; }
+    #content { margin: 0 !important; padding: 0 !important; }
+}
+.ticket-box {
+    border: 3px solid #4F46E5;
+    border-radius: 12px;
+    max-width: 380px;
+    margin: 0 auto;
+    font-family: 'Public Sans', Arial, sans-serif;
+    overflow: hidden;
+}
+.ticket-header {
+    background: linear-gradient(135deg, #6C63FF 0%, #4F46E5 100%);
+    color: white;
+    padding: 14px 16px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+.ticket-header-logo { height: 36px; border-radius: 6px; }
+.ticket-header-info h2 { margin: 0; font-weight: 700; font-size: 1rem; }
+.ticket-header-info p { margin: 0; font-size: 0.6rem; opacity: 0.85; }
+.ticket-title-bar {
+    background: #f0f4ff;
+    padding: 8px 16px;
+    text-align: center;
+    border-bottom: 2px solid #4F46E5;
+}
+.ticket-title-bar h4 { font-weight: 700; color: #4F46E5; margin: 0; font-size: 0.85rem; }
+.ticket-body { padding: 10px 16px; }
+.ticket-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 5px 0;
+    border-bottom: 1px dashed #e0e0e0;
+    font-size: 0.78rem;
+}
+.ticket-row:last-child { border-bottom: none; }
+.ticket-label { color: #6b7280; }
+.ticket-value { color: #1e293b; font-weight: 700; }
+.ticket-token {
+    text-align: center;
+    padding: 10px;
+}
+.ticket-token-num {
+    background: linear-gradient(135deg, #6C63FF, #4F46E5);
+    color: white;
+    font-size: 1.6rem;
+    font-weight: 800;
+    padding: 10px 24px;
+    border-radius: 10px;
+    display: inline-block;
+}
+.ticket-qr { text-align: center; padding: 8px; }
+.ticket-fee {
+    margin: 6px 0;
+    padding: 6px 10px;
+    background: #f0fdf4;
+    border: 1px solid #bbf7d0;
+    border-radius: 6px;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.8rem;
+}
+.ticket-fee-label { color: #166534; font-weight: 600; }
+.ticket-fee-amount { color: #166534; font-weight: 800; font-size: 0.9rem; }
+.ticket-counter {
+    font-size: 0.7rem;
+    color: #9ca3af;
+    padding: 4px 10px;
+    background: #f9fafb;
+    border-radius: 4px;
+    margin-top: 6px;
+    display: flex;
+    justify-content: space-between;
+}
+.ticket-footer {
+    background: #4F46E5;
+    color: white;
+    padding: 10px 16px;
+    text-align: center;
+    font-size: 0.7rem;
+}
+.ticket-footer-motto { font-weight: 700; font-size: 0.85rem; margin-bottom: 4px; }
+.ticket-footer-info { opacity: 0.8; font-size: 0.65rem; }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center"><div class="col-xl-5">
+<div class="print-area">
+<div class="ticket-box">
+    <!-- HEADER -->
+    <div class="ticket-header">
+        <img src="/static/images/brand/logo/hamro-hospital-logo.jpg" alt="Hamro Hospital" class="ticket-header-logo"/>
+        <div class="ticket-header-info">
+            <h2>HAMRO HOSPITAL</h2>
+            <p>Kathmandu, Nepal &bull; 24/7 Emergency &bull; +977-01-XXXXXXX</p>
+        </div>
+    </div>
+
+    <!-- Title -->
+    <div class="ticket-title-bar">
+        <h4>OPD REGISTRATION TICKET</h4>
+    </div>
+
+    <!-- Token -->
+    <div class="ticket-token">
+        <div class="ticket-token-num">Token # {{ visit.token_number }}</div>
+    </div>
+
+    <!-- QR -->
+    <div class="ticket-qr">
+        {% if patient.qr_code %}
+        <img src="{{ patient.qr_code.url }}" alt="QR" style="width:90px;height:90px;border:1px solid #ddd;border-radius:4px"/>
+        {% endif %}
+    </div>
+
+    <!-- Patient Info -->
+    <div class="ticket-body">
+        <div class="ticket-row"><span class="ticket-label">Patient ID</span><span class="ticket-value">{{ patient.patient_id }}</span></div>
+        <div class="ticket-row"><span class="ticket-label">Name</span><span class="ticket-value">{{ patient.full_name }}</span></div>
+        <div class="ticket-row"><span class="ticket-label">Phone</span><span class="ticket-value">{{ patient.phone }}</span></div>
+        <div class="ticket-row"><span class="ticket-label">Age / Gender</span><span class="ticket-value">{{ patient.age_display }} / {{ patient.gender }}</span></div>
+        <div class="ticket-row"><span class="ticket-label">Blood Group</span><span class="ticket-value">{{ patient.blood_group|default:"N/A" }}</span></div>
+        <div class="ticket-row"><span class="ticket-label">Department</span><span class="ticket-value">{{ visit.department.name }}</span></div>
+        <div class="ticket-row"><span class="ticket-label">Doctor</span><span class="ticket-value">Dr. {{ visit.doctor.name }}</span></div>
+        <div class="ticket-row"><span class="ticket-label">Visit Type</span><span class="ticket-value">OPD Consultation</span></div>
+        <div class="ticket-row"><span class="ticket-label">Date &amp; Time</span><span class="ticket-value">{{ visit.visit_date|date:"Y-m-d" }} {{ visit.visit_date|date:"H:i" }}</span></div>
+
+        <!-- Fee -->
+        <div class="ticket-fee">
+            <span class="ticket-fee-label">Registration Fee</span>
+            <span class="ticket-fee-amount">NPR {{ visit.registration_fee }}</span>
+        </div>
+
+        <!-- Counter -->
+        <div class="ticket-counter">
+            <span>Counter: Registration</span>
+            <span>Staff: {{ visit.created_by.username|default:"Staff" }}</span>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="ticket-footer">
+        <div class="ticket-footer-motto">🩺 Health is Wealth</div>
+        <div class="ticket-footer-info">
+            Emergency: +977-01-XXXXXXX &bull; www.hamrohospital.com &bull; info@hamrohospital.com<br/>
+            Hamro Hospital, Kathmandu, Nepal
+        </div>
+    </div>
+</div>
+
+<!-- Navigation + Print -->
+<div class="d-flex justify-content-center gap-2 mt-3 no-print">
+    <button class="btn btn-primary btn-sm" onclick="window.print()">
+        <i class="ti ti-printer me-1"></i> Print
+    </button>
+    <a href="/patients/opd-ticket-pdf/{{ visit.pk }}/" class="btn btn-outline-primary btn-sm">
+        <i class="ti ti-file-text me-1"></i> Download PDF
+    </a>
+    <a href="/billing/create/?patient={{ patient.pk }}" class="btn btn-outline-warning btn-sm">
+        <i class="ti ti-receipt me-1"></i> Create Bill
+    </a>
+    <a href="/patients/detail/{{ patient.pk }}/" class="btn btn-outline-info btn-sm">
+        <i class="ti ti-user me-1"></i> Patient Profile
+    </a>
+    <a href="/patients/patient-card/{{ patient.pk }}/" class="btn btn-outline-success btn-sm">
+        <i class="ti ti-id-card me-1"></i> Patient Card
+    </a>
+    <a href="{{ user.get_dashboard_url }}" class="btn btn-outline-secondary btn-sm">
+        <i class="ti ti-home-2 me-1"></i> Dashboard
+    </a>
+</div>
+</div></div></div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Today Collections - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/billing/">Cash Counter</a></li><li class="breadcrumb-item active">Today Collections</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8">
+        <div class="bg-gradient-mixed p-8 py-10 rounded-3">
+            <h1 class="fs-3">💰 Today's Collections</h1>
+            <p class="fs-5 fw-bold">Total: Rs. {{ total|floatformat:0 }}</p>
+            <a href="/billing/" class="btn btn-white"><i class="ti ti-arrow-left me-1"></i>Back to Dashboard</a>
+        </div>
+    </div>
+</div>
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Bill ID</th><th>Patient</th><th>Amount</th><th>Method</th><th>Time</th></tr></thead>
+                        <tbody>
+                            {% for bill in bills %}
+                            <tr>
+                                <td>{{ bill.bill_id }}</td>
+                                <td>{{ bill.patient.full_name }}</td>
+                                <td>Rs. {{ bill.final_amount }}</td>
+                                <td>{{ bill.payment_method }}</td>
+                                <td>{{ bill.created_at|date:"H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-secondary py-4">No bills today.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

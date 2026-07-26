@@ -1,0 +1,25 @@
+<!DOCTYPE html><html lang="en" data-bs-theme="light" id="htmlRoot"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>Book Appointment - Hamro Hospital</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet"><link href="/static/css/bootstrap.min.css" rel="stylesheet"/><link href="/static/css/all.min.css" rel="stylesheet"/><link href="/static/css/style.css" rel="stylesheet"/><link href="/static/css/aos.css" rel="stylesheet"/>
+</head><body><div id="landing"><nav id="nbar"><div class="container"><div class="d-flex align-items-center justify-content-between w-100">
+<a href="/" class="d-flex align-items-center gap-2" style="font-size:1.2rem;font-weight:700"><div class="logo-i"><i class="fa-solid fa-hospital"></i></div><span>Hamro Hospital</span></a>
+<div class="d-none d-lg-flex align-items-center gap-1 mx-auto"><a href="/" class="nav-link">Home</a><a href="/departments/" class="nav-link">Departments</a><a href="/doctors/" class="nav-link">Doctors</a><a href="/contact/" class="nav-link">Contact</a></div>
+</div></div></nav>
+<section style="padding:80px 0"><div class="container"><div class="row justify-content-center"><div class="col-lg-8">
+<div class="gc p-5"><div class="text-center mb-4"><h2 style="font-weight:700">Book <span style="background:linear-gradient(135deg,#6C63FF,#8B5CF6);-webkit-background-clip:text;-webkit-text-fill-color:transparent">Appointment</span></h2><p style="color:var(--tx2)">Select your department, doctor, and preferred date.</p></div>
+{% if error %}<div class="alert alert-danger">{{ error }}</div>{% endif %}
+<form method="post">{% csrf_token %}
+<div class="row g-3">
+<div class="col-md-6"><label class="form-label">Patient ID</label><input type="text" class="form-control" name="patient_id" placeholder="e.g. HT-2026-000001" required/></div>
+<div class="col-md-6"><label class="form-label">Department</label><select class="form-select" name="department">{% for d in departments %}<option value="{{ d.pk }}">{{ d.name }}</option>{% endfor %}</select></div>
+<div class="col-md-6"><label class="form-label">Doctor</label><select class="form-select" name="doctor">{% for d in doctors %}<option value="{{ d.pk }}">Dr. {{ d.name }} ({{ d.specialization }})</option>{% endfor %}</select></div>
+<div class="col-md-6"><label class="form-label">Appointment Date</label><input type="date" class="form-control" name="appointment_date" required/></div>
+<div class="col-md-6"><label class="form-label">Time</label><input type="time" class="form-control" name="appointment_time"/></div>
+<div class="col-md-6"><label class="form-label">Notes</label><input type="text" class="form-control" name="notes"/></div>
+</div>
+<button class="bgrd btn w-100 mt-4 py-3" type="submit">Book Appointment</button>
+</form>
+</div></div></div></div></section>
+<footer style="padding:40px 0;border-top:1px solid var(--bd)"><div class="container text-center" style="color:var(--tx3);font-size:.75rem">© 2026 Hamro Hospital</div></footer>
+</div><script src="/static/js/jquery-3.7.1.min.js"></script><script src="/static/js/bootstrap.bundle.min.js"></script><script src="/static/js/aos.js"></script><script>AOS.init({duration:800,once:true});</script>
+    <script src="/static/js/website-theme.js"></script>
+</body></html>

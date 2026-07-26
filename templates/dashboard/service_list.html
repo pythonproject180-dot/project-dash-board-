@@ -1,0 +1,35 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Hospital Services - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/billing/">Billing</a></li><li class="breadcrumb-item active">Services</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Hospital Services</h4>
+                <a href="/billing/services/add/" class="btn btn-primary"><i class="ti ti-plus me-1"></i>Add Service</a>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Code</th><th>Name</th><th>Department</th><th>Price</th><th>Status</th></tr></thead>
+                        <tbody>
+                            {% for s in services %}
+                            <tr>
+                                <td>{{ s.code }}</td>
+                                <td>{{ s.name }}</td>
+                                <td>{{ s.department|default:"—" }}</td>
+                                <td>Rs. {{ s.price }}</td>
+                                <td>{% if s.is_active %}<span class="badge bg-success-subtle text-success-emphasis">Active</span>{% else %}<span class="badge bg-danger-subtle text-danger-emphasis">Inactive</span>{% endif %}</td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="5" class="text-center text-secondary py-4">No services found.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,90 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Radiology Dashboard - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item active">Radiology</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8 col-lg-6">
+        <div class="bg-gradient-mixed p-8 py-10 rounded-3 p-lg-7">
+            <h1 class="fs-3">🩻 Radiology Dashboard</h1>
+            <p>Manage imaging requests, scheduling, and radiology reports.</p>
+            <a href="/radiology/queue/" class="btn btn-dark">View Queue</a>
+        </div>
+    </div>
+</div>
+<div class="row row-cols-1 row-cols-xl-5 row-cols-md-3 mb-6 g-6">
+    <div class="col">
+        <div class="card card-lg">
+            <div class="card-body d-flex flex-column gap-8">
+                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-warning-darker text-warning-lighter"><i class="ti ti-file-plus fs-4"></i></div><div>Requested</div></div>
+                <div class="fs-3 fw-bold">{{ requested }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card card-lg">
+            <div class="card-body d-flex flex-column gap-8">
+                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-info-darker text-info-lighter"><i class="ti ti-calendar fs-4"></i></div><div>Scheduled</div></div>
+                <div class="fs-3 fw-bold">{{ scheduled }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card card-lg">
+            <div class="card-body d-flex flex-column gap-8">
+                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-primary-darker text-primary-lighter"><i class="ti ti-zap fs-4"></i></div><div>In Progress</div></div>
+                <div class="fs-3 fw-bold">{{ in_progress }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card card-lg">
+            <div class="card-body d-flex flex-column gap-8">
+                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-success-darker text-success-lighter"><i class="ti ti-check fs-4"></i></div><div>Completed Today</div></div>
+                <div class="fs-3 fw-bold">{{ completed_today }}</div>
+            </div>
+        </div>
+    </div>
+    <div class="col">
+        <div class="card card-lg">
+            <div class="card-body d-flex flex-column gap-8">
+                <div class="d-flex align-items-center gap-3"><div class="icon-shape icon-lg rounded-circle bg-danger-darker text-danger-lighter"><i class="ti ti-alert-circle fs-4"></i></div><div>Urgent</div></div>
+                <div class="fs-3 fw-bold">{{ urgent }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <h4 class="mb-0">Recent Radiology Requests</h4>
+                <div class="d-flex gap-2">
+                    <a href="/radiology/queue/" class="btn btn-primary"><i class="ti ti-list me-1"></i>Queue</a>
+                    <a href="/radiology/search/" class="btn btn-white"><i class="ti ti-search me-1"></i>Search</a>
+                </div>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead><tr><th>Patient</th><th>Type</th><th>Priority</th><th>Status</th><th>Date</th><th>Action</th></tr></thead>
+                        <tbody>
+                            {% for req in recent %}
+                            <tr>
+                                <td><a href="/patients/detail/{{ req.patient.pk }}/">{{ req.patient.full_name }}</a></td>
+                                <td>{{ req.imaging_type }}</td>
+                                <td>{{ req.priority }}</td>
+                                <td><span class="badge bg-{% if req.status == 'requested' %}warning{% elif req.status == 'scheduled' %}info{% elif req.status == 'in_progress' %}primary{% else %}success{% endif %}-subtle">{{ req.status }}</span></td>
+                                <td>{{ req.completed_at|date:"Y-m-d"|default:req.created_at|date:"Y-m-d" }}</td>
+                                <td><a href="/radiology/request/{{ req.pk }}/" class="btn btn-sm btn-primary">View</a></td>
+                            </tr>
+                            {% empty %}
+                            <tr><td colspan="6" class="text-center text-secondary py-4">No radiology requests.</td></tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

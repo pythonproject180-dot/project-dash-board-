@@ -1,0 +1,94 @@
+{% extends "dashboard/base.html" %}
+{% block title %}Dispense Medicine - Hamro Hospital{% endblock %}
+{% block breadcrumb %}<li class="breadcrumb-item"><a href="/pharmacy/">Pharmacy</a></li><li class="breadcrumb-item active">Dispense</li>{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-10">
+        <div class="card">
+            <div class="card-header"><h4 class="mb-0">Dispense Medicine</h4></div>
+            <div class="card-body">
+                <form method="post" id="dispenseForm">{% csrf_token %}
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-4">
+                            <label class="form-label">Patient (optional)</label>
+                            <select class="form-select" name="patient">
+                                <option value="">No Patient</option>
+                                {% for p in patients %}
+                                <option value="{{ p.pk }}">{{ p.patient_id }} — {{ p.full_name }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Payment Method</label>
+                            <select class="form-select" name="payment_method">
+                                <option value="cash">Cash</option>
+                                <option value="esewa">eSewa</option>
+                                <option value="card">Card</option>
+                                <option value="insurance">Insurance</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4">
+                            <label class="form-label">Prescription Reference</label>
+                            <input type="text" class="form-control" name="prescription_ref" placeholder="Prescription ID"/>
+                        </div>
+                    </div>
+                    <h5>Medicine Items</h5>
+                    <div id="medicineItems">
+                        <div class="row g-3 mb-2 medicine-row">
+                            <div class="col-md-5">
+                                <select class="form-select" name="medicine_0">
+                                    <option value="">Select Medicine</option>
+                                    {% for m in medicines %}
+                                    <option value="{{ m.pk }}">{{ m.code }} — {{ m.name }} (Rs. {{ m.price }}) [Stock: {{ m.stock_quantity }}]</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
+                            <div class="col-md-3">
+                                <input type="number" class="form-control" name="quantity_0" value="1" min="1"/>
+                            </div>
+                            <div class="col-md-2">
+                                <button type="button" class="btn btn-sm btn-success" onclick="addItem()"><i class="ti ti-plus"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" name="item_count" id="itemCount" value="1"/>
+                    <div class="col-md-3 mt-3">
+                        <label class="form-label">Discount (Rs.)</label>
+                        <input type="number" class="form-control" name="discount" value="0"/>
+                    </div>
+                    <div class="mt-4">
+                        <button type="submit" class="btn btn-primary"><i class="ti ti-capsule me-1"></i>Dispense & Generate Bill</button>
+                        <a href="/pharmacy/" class="btn btn-white ms-2">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% block extra_js %}
+<script>
+let itemCount = 1;
+function addItem() {
+    itemCount++;
+    document.getElementById('itemCount').value = itemCount;
+    const row = document.createElement('div');
+    row.className = 'row g-3 mb-2 medicine-row';
+    row.innerHTML = `
+        <div class="col-md-5">
+            <select class="form-select" name="medicine_${itemCount-1}">
+                <option value="">Select Medicine</option>
+                {% for m in medicines %}<option value="{{ m.pk }}">{{ m.code }} — {{ m.name }} (Rs. {{ m.price }})</option>{% endfor %}
+            </select>
+        </div>
+        <div class="col-md-3">
+            <input type="number" class="form-control" name="quantity_${itemCount-1}" value="1" min="1"/>
+        </div>
+        <div class="col-md-2">
+            <button type="button" class="btn btn-sm btn-danger" onclick="this.closest('.medicine-row').remove();itemCount--;document.getElementById('itemCount').value=itemCount"><i class="ti ti-x"></i></button>
+        </div>
+    `;
+    document.getElementById('medicineItems').appendChild(row);
+}
+</script>
+{% endblock %}
+{% endblock %}

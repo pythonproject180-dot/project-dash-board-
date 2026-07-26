@@ -1,0 +1,133 @@
+{% extends "dashboard/base.html" %}
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h4 class="mb-0"><i class="fas fa-file-medical me-2"></i>Discharge Summary</h4>
+        <div>
+            <button onclick="window.print()" class="btn btn-outline-primary me-2"><i class="fas fa-print me-1"></i>Print</button>
+            <a href="/admissions/discharge-summary-pdf/{{ discharge.pk }}/" class="btn btn-outline-success me-2"><i class="fas fa-file-pdf me-1"></i>PDF</a>
+            <a href="/admissions/discharge-summary-jpg/{{ discharge.pk }}/" class="btn btn-outline-warning"><i class="fas fa-image me-1"></i>JPG</a>
+        </div>
+    </div>
+
+    <div class="card shadow-lg" id="printable-area">
+        <!-- Hospital Header -->
+        <div class="card-header text-center bg-primary text-white py-3">
+            <h3 class="mb-0">Hamro Hospital</h3>
+            <p class="mb-0 small">Kathmandu, Nepal | Phone: +977-01-XXXXXXX | Email: info@hamrohospital.org.np</p>
+            <p class="mb-0 small">www.hamrohospital.org.np</p>
+        </div>
+
+        <div class="card-body">
+            <!-- Discharge Summary Title -->
+            <h4 class="text-center mb-4 fw-bold">DISCHARGE SUMMARY</h4>
+
+            <!-- Patient & Admission Info -->
+            <div class="row mb-3">
+                <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr><td class="fw-bold w-25">Patient:</td><td>{{ discharge.patient.full_name }}</td></tr>
+                        <tr><td class="fw-bold">Hospital ID:</td><td>{{ discharge.patient.patient_id }}</td></tr>
+                        <tr><td class="fw-bold">Age/Gender:</td><td>{{ discharge.patient.age_display }} / {{ discharge.patient.gender }}</td></tr>
+                        <tr><td class="fw-bold">Blood Group:</td><td>{{ discharge.patient.blood_group }}</td></tr>
+                        <tr><td class="fw-bold">Phone:</td><td>{{ discharge.patient.phone }}</td></tr>
+                        <tr><td class="fw-bold">Address:</td><td>{{ discharge.patient.address_display }}</td></tr>
+                    </table>
+                </div>
+                <div class="col-6">
+                    <table class="table table-sm table-borderless">
+                        <tr><td class="fw-bold w-25">Admission ID:</td><td>{{ discharge.admission.admission_id }}</td></tr>
+                        <tr><td class="fw-bold">Admitted:</td><td>{{ discharge.admission.admission_date|date:"d M Y" }}</td></tr>
+                        <tr><td class="fw-bold">Discharged:</td><td>{{ discharge.admission.discharge_date|date:"d M Y" }}</td></tr>
+                        <tr><td class="fw-bold">Ward/Bed:</td><td>{{ discharge.admission.ward.name }} / {{ discharge.admission.bed.bed_number }}</td></tr>
+                        <tr><td class="fw-bold">Attending Dr:</td><td>{{ discharge.attending_doctor.name }}</td></tr>
+                        <tr><td class="fw-bold">Condition:</td><td>{{ discharge.condition_at_discharge }}</td></tr>
+                    </table>
+                </div>
+            </div>
+
+            <!-- QR & Barcode -->
+            <div class="row mb-3">
+                <div class="col-3 text-center">
+                    {% if discharge.patient.qr_code %}
+                    <img src="{{ discharge.patient.qr_code.url }}" alt="Patient QR" class="img-fluid" style="max-height:100px;">
+                    <small class="d-block">Patient QR</small>
+                    {% endif %}
+                </div>
+                <div class="col-3 text-center">
+                    {% if discharge.barcode %}
+                    <img src="{{ discharge.barcode.url }}" alt="Barcode" class="img-fluid" style="max-height:100px;">
+                    <small class="d-block">Discharge Barcode</small>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Clinical Details -->
+            <hr>
+            <table class="table table-bordered">
+                <tr><td class="fw-bold bg-light w-25">Admission Diagnosis</td><td>{{ discharge.admission_diagnosis }}</td></tr>
+                <tr><td class="fw-bold bg-light">Final Diagnosis</td><td>{{ discharge.final_diagnosis }}</td></tr>
+                <tr><td class="fw-bold bg-light">Chief Complaint</td><td>{{ discharge.chief_complaint }}</td></tr>
+                <tr><td class="fw-bold bg-light">History of Present Illness</td><td>{{ discharge.history_of_present_illness }}</td></tr>
+                <tr><td class="fw-bold bg-light">Examination Findings</td><td>{{ discharge.examination_findings }}</td></tr>
+                <tr><td class="fw-bold bg-light">Investigations</td><td>{{ discharge.investigations }}</td></tr>
+                <tr><td class="fw-bold bg-light">Treatment Given</td><td>{{ discharge.treatment_given }}</td></tr>
+            </table>
+
+            <!-- Discharge Instructions -->
+            <div class="mb-3">
+                <h6 class="fw-bold">Discharge Instructions</h6>
+                <p>{{ discharge.discharge_instructions }}</p>
+            </div>
+
+            <div class="mb-3">
+                <h6 class="fw-bold">Medications at Discharge</h6>
+                <p>{{ discharge.medications_at_discharge }}</p>
+            </div>
+
+            <div class="mb-3">
+                <h6 class="fw-bold">Follow-up</h6>
+                <p>Date: {{ discharge.follow_up_date|date:"d M Y" }}</p>
+                <p>{{ discharge.follow_up_instructions }}</p>
+            </div>
+
+            <!-- Signatures -->
+            <div class="row mt-4">
+                <div class="col-6 text-center">
+                    <div class="border-top pt-2 mt-5">
+                        <small>Attending Doctor's Signature</small><br>
+                        <strong>Dr. {{ discharge.attending_doctor.name }}</strong>
+                    </div>
+                </div>
+                <div class="col-6 text-center">
+                    <div class="border-top pt-2 mt-5">
+                        <small>Prepared By</small><br>
+                        <strong>{{ discharge.prepared_by.get_full_name }}</strong>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="card-footer text-center bg-dark text-white py-2">
+            <p class="mb-0 small"><strong>Health is Wealth</strong> | Emergency: +977-01-XXXXXXX | www.hamrohospital.org.np</p>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <div class="d-flex justify-content-center mt-4">
+        <a href="/admissions/" class="btn btn-outline-secondary me-2"><i class="fas fa-home me-1"></i>Admission Dashboard</a>
+        <a href="/patients/detail/{{ discharge.patient.pk }}/" class="btn btn-outline-primary me-2"><i class="fas fa-user me-1"></i>Patient Profile</a>
+    </div>
+</div>
+
+<style>
+@media print {
+    .btn, .d-flex.justify-content-between, .d-flex.justify-content-center, nav, .sidebar { display: none !important; }
+    .card { border: none !important; }
+    .card-header { background-color: #0d6efd !important; -webkit-print-color-adjust: exact; }
+    .card-footer { background-color: #212529 !important; -webkit-print-color-adjust: exact; }
+    .bg-light { background-color: #f8f9fa !important; -webkit-print-color-adjust: exact; }
+}
+</style>
+{% endblock %}

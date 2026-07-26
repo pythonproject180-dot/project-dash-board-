@@ -1,0 +1,684 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta content="Hamro Hospital Management System" name="author">
+    <title>{% block title %}Hamro Hospital Dashboard{% endblock %}</title>
+    <!-- Favicon -->
+    <link rel="apple-touch-icon" sizes="57x57" href="/static/images/favicon/apple-icon-57x57.png"/>
+    <link rel="apple-touch-icon" sizes="60x60" href="/static/images/favicon/apple-icon-60x60.png"/>
+    <link rel="apple-touch-icon" sizes="72x72" href="/static/images/favicon/apple-icon-72x72.png"/>
+    <link rel="apple-touch-icon" sizes="76x76" href="/static/images/favicon/apple-icon-76x76.png"/>
+    <link rel="apple-touch-icon" sizes="114x114" href="/static/images/favicon/apple-icon-114x114.png"/>
+    <link rel="apple-touch-icon" sizes="120x120" href="/static/images/favicon/apple-icon-120x120.png"/>
+    <link rel="apple-touch-icon" sizes="144x144" href="/static/images/favicon/apple-icon-144x144.png"/>
+    <link rel="apple-touch-icon" sizes="152x152" href="/static/images/favicon/apple-icon-152x152.png"/>
+    <link rel="apple-touch-icon" sizes="180x180" href="/static/images/favicon/apple-icon-180x180.png"/>
+    <link rel="icon" type="image/png" sizes="192x192" href="/static/images/favicon/android-icon-192x192.png"/>
+    <link rel="icon" type="image/png" sizes="32x32" href="/static/images/favicon/favicon-32x32.png"/>
+    <link rel="icon" type="image/png" sizes="96x96" href="/static/images/favicon/favicon-96x96.png"/>
+    <link rel="icon" type="image/png" sizes="16x16" href="/static/images/favicon/favicon-16x16.png"/>
+    <meta name="msapplication-TileColor" content="#ffffff"/>
+    <meta name="msapplication-TileImage" content="/static/images/favicon/ms-icon-144x144.png"/>
+    <meta name="theme-color" content="#ffffff"/>
+    <!-- Color modes -->
+    <script src="/static/js/vendors/color-modes.js"></script>
+    <script>
+        if (localStorage.getItem('sidebarExpanded') === 'false') {
+            document.documentElement.classList.add('collapsed');
+            document.documentElement.classList.remove('expanded');
+        } else {
+            document.documentElement.classList.remove('collapsed');
+            document.documentElement.classList.add('expanded');
+        }
+    </script>
+    <!-- Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com"/>
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@300;400;500;600;700;800&display=swap"/>
+    <!-- Libs CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/simplebar@6/dist/simplebar.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3/dist/tabler-icons.min.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.css"/>
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="/static/css/theme.css"/>
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"/>
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+    <!-- Vertical Sidebar + Main Content -->
+    <div>
+        <!-- Sidebar -->
+        <div id="miniSidebar">
+            <div class="brand-logo">
+                <a class="d-none d-md-flex align-items-center gap-2" href="/">
+                    <img src="/static/images/brand/logo/hamro-hospital-logo.jpg" alt="Hamro Hospital" style="height:32px;border-radius:6px"/>
+                    <span class="fw-bold fs-4 site-logo-text">Hamro Hospital</span>
+                </a>
+            </div>
+            <ul class="navbar-nav flex-column">
+                {% if role == 'super_admin' or user.is_superuser %}
+                <!-- Super Admin Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/accounts/dashboard/super-admin/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="nav-icon"><i class="ti ti-users"></i></span>
+                        <span class="text">Staff Management</span>
+                    </a>
+                    <ul class="dropdown-menu flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/accounts/staff/">Staff List</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/accounts/staff/add/">Add Staff</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="nav-icon"><i class="ti ti-hospital"></i></span>
+                        <span class="text">Hospital Data</span>
+                    </a>
+                    <ul class="dropdown-menu flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/departments/">Departments</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/doctors/list/">Doctors</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/billing/services/">Hospital Services</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/pharmacy/medicines/">Medicines</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="nav-icon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="text">Reports</span>
+                    </a>
+                    <ul class="dropdown-menu flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/reports/revenue/">Revenue</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/registration/">Registration</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/department/">Department</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/doctor/">Doctor</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/pharmacy/">Pharmacy</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/laboratory/">Laboratory</a></li>
+                    </ul>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="nav-icon"><i class="ti ti-heartbeat"></i></span>
+                        <span class="text">Clinical Modules</span>
+                    </a>
+                    <ul class="dropdown-menu flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/patients/dashboard/">Registration</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/billing/">Cash Counter</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/admissions/">Admissions</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/laboratory/">Laboratory</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/radiology/">Radiology</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/pharmacy/">Pharmacy</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/insurance/">Insurance</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/nursing/">Nursing</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/operation-theatre/">OT</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/blood-bank/">Blood Bank</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/medical-records/">Medical Records</a></li>
+                    </ul>
+                </li>
+
+                {% elif role == 'registration' %}
+                <!-- Registration Counter Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/dashboard/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/register/">
+                        <span class="nav-icon"><i class="ti ti-user-plus"></i></span>
+                        <span class="text">Register Patient</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Patient</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/list/">
+                        <span class="nav-icon"><i class="ti ti-list"></i></span>
+                        <span class="text">Patient List</span>
+                    </a>
+                </li>
+
+                {% elif role == 'doctor' %}
+                <!-- Doctor Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/doctors/dashboard/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Patient</span>
+                    </a>
+                </li>
+
+                {% elif role == 'laboratory' %}
+                <!-- Lab Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/laboratory/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/laboratory/queue/">
+                        <span class="nav-icon"><i class="ti ti-flask"></i></span>
+                        <span class="text">Lab Queue</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/laboratory/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Patient</span>
+                    </a>
+                </li>
+
+                {% elif role == 'radiology' %}
+                <!-- Radiology Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/radiology/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/radiology/queue/">
+                        <span class="nav-icon"><i class="ti ti-x-ray"></i></span>
+                        <span class="text">Radiology Queue</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/radiology/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Patient</span>
+                    </a>
+                </li>
+
+                {% elif role == 'pharmacy' %}
+                <!-- Pharmacy Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/pharmacy/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pharmacy/dispense/">
+                        <span class="nav-icon"><i class="ti ti-capsule"></i></span>
+                        <span class="text">Dispense Medicine</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/pharmacy/medicines/">
+                        <span class="nav-icon"><i class="ti ti-pill"></i></span>
+                        <span class="text">Medicine Catalogue</span>
+                    </a>
+                </li>
+
+                {% elif role == 'cash_counter' %}
+                <!-- Cash Counter Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/billing/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/billing/create/">
+                        <span class="nav-icon"><i class="ti ti-receipt"></i></span>
+                        <span class="text">Create Bill</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/billing/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Bills</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/billing/services/">
+                        <span class="nav-icon"><i class="ti ti-list-details"></i></span>
+                        <span class="text">Services</span>
+                    </a>
+                </li>
+
+                {% elif role == 'insurance' %}
+                <!-- Insurance Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/insurance/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/insurance/claim/submit/">
+                        <span class="nav-icon"><i class="ti ti-file-plus"></i></span>
+                        <span class="text">Submit Claim</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/insurance/insurers/">
+                        <span class="nav-icon"><i class="ti ti-building-cottage"></i></span>
+                        <span class="text">Insurers</span>
+                    </a>
+                </li>
+
+                {% elif role == 'admission' %}
+                <!-- Admission Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/admissions/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admissions/admit/">
+                        <span class="nav-icon"><i class="ti ti-bed"></i></span>
+                        <span class="text">Admit Patient</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/admissions/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search</span>
+                    </a>
+                </li>
+
+                {% elif role == 'nursing' %}
+                <!-- Nursing Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/nursing/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Patient</span>
+                    </a>
+                </li>
+
+                {% elif role == 'operation_theatre' %}
+                <!-- OT Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/operation-theatre/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Patient</span>
+                    </a>
+                </li>
+
+                {% elif role == 'blood_bank' %}
+                <!-- Blood Bank Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/blood-bank/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/patients/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Patient</span>
+                    </a>
+                </li>
+
+                {% elif role == 'accounts' %}
+                <!-- Accounts Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/reports/accounts/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                        <span class="nav-icon"><i class="ti ti-chart-bar"></i></span>
+                        <span class="text">Reports</span>
+                    </a>
+                    <ul class="dropdown-menu flex-column">
+                        <li class="nav-item"><a class="nav-link" href="/reports/revenue/">Revenue</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/registration/">Registration</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/department/">Department</a></li>
+                        <li class="nav-item"><a class="nav-link" href="/reports/doctor/">Doctor</a></li>
+                    </ul>
+                </li>
+
+                {% elif role == 'medical_records' %}
+                <!-- Medical Records Sidebar -->
+                <li class="nav-item">
+                    <a class="nav-link" href="/medical-records/">
+                        <span class="nav-icon"><i class="ti ti-home-2"></i></span>
+                        <span class="text">Dashboard</span>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/medical-records/search/">
+                        <span class="nav-icon"><i class="ti ti-search"></i></span>
+                        <span class="text">Search Records</span>
+                    </a>
+                </li>
+                {% endif %}
+
+                <!-- User card at bottom of sidebar -->
+                <li>
+                    <div class="text-center py-5 upgrade-ui">
+                        <div>
+                            <div style="width:50px;height:50px;border-radius:12px;background:var(--grad);display:flex;align-items:center;justify-content:center;margin:0 auto">
+                                <i class="ti ti-user fs-4" style="color:white"></i>
+                            </div>
+                            <div class="my-3">
+                                <h5 class="mb-1 fs-6">{{ user.first_name|default:user.username }}</h5>
+                                <span class="text-secondary">{{ user.role_display|default:user.role }}</span>
+                            </div>
+                            <a href="/accounts/logout/" class="btn btn-primary">Logout</a>
+                        </div>
+                    </div>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Mobile Offcanvas Sidebar -->
+        <div class="offcanvasNav offcanvas offcanvas-start" tabindex="-1" id="offcanvasExample" aria-labelledby="offcanvasExampleLabel">
+            <div class="offcanvas-header">
+                <a class="d-flex align-items-center gap-2" href="/">
+                    <img src="/static/images/brand/logo/hamro-hospital-logo.jpg" alt="Hamro Hospital" style="height:32px;border-radius:6px"/>
+                    <span class="fw-bold fs-4 site-logo-text">Hamro Hospital</span>
+                </a>
+                <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body" data-simplebar>
+                <ul class="navbar-nav flex-column">
+                    {% if role == 'super_admin' or user.is_superuser %}
+                    <li class="nav-item"><a class="nav-link" href="/accounts/dashboard/super-admin/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/accounts/staff/"><i class="ti ti-users me-2"></i>Staff List</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/accounts/staff/add/"><i class="ti ti-user-plus me-2"></i>Add Staff</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/departments/"><i class="ti ti-hospital me-2"></i>Departments</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/doctors/list/"><i class="ti ti-doctor me-2"></i>Doctors</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/billing/services/"><i class="ti ti-list-details me-2"></i>Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/reports/revenue/"><i class="ti ti-chart-bar me-2"></i>Revenue</a></li>
+                    {% elif role == 'registration' %}
+                    <li class="nav-item"><a class="nav-link" href="/patients/dashboard/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/patients/register/"><i class="ti ti-user-plus me-2"></i>Register Patient</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/patients/search/"><i class="ti ti-search me-2"></i>Search Patient</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/patients/list/"><i class="ti ti-list me-2"></i>Patient List</a></li>
+                    {% elif role == 'doctor' %}
+                    <li class="nav-item"><a class="nav-link" href="/doctors/dashboard/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/patients/search/"><i class="ti ti-search me-2"></i>Search Patient</a></li>
+                    {% elif role == 'laboratory' %}
+                    <li class="nav-item"><a class="nav-link" href="/laboratory/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/laboratory/queue/"><i class="ti ti-flask me-2"></i>Lab Queue</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/laboratory/search/"><i class="ti ti-search me-2"></i>Search Patient</a></li>
+                    {% elif role == 'radiology' %}
+                    <li class="nav-item"><a class="nav-link" href="/radiology/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/radiology/queue/"><i class="ti ti-x-ray me-2"></i>Radiology Queue</a></li>
+                    {% elif role == 'pharmacy' %}
+                    <li class="nav-item"><a class="nav-link" href="/pharmacy/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/pharmacy/dispense/"><i class="ti ti-capsule me-2"></i>Dispense Medicine</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/pharmacy/medicines/"><i class="ti ti-pill me-2"></i>Medicine Catalogue</a></li>
+                    {% elif role == 'cash_counter' %}
+                    <li class="nav-item"><a class="nav-link" href="/billing/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/billing/create/"><i class="ti ti-receipt me-2"></i>Create Bill</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/billing/search/"><i class="ti ti-search me-2"></i>Search Bills</a></li>
+                    {% elif role == 'insurance' %}
+                    <li class="nav-item"><a class="nav-link" href="/insurance/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/insurance/claim/submit/"><i class="ti ti-file-plus me-2"></i>Submit Claim</a></li>
+                    {% elif role == 'admission' %}
+                    <li class="nav-item"><a class="nav-link" href="/admissions/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    <li class="nav-item"><a class="nav-link" href="/admissions/admit/"><i class="ti ti-bed me-2"></i>Admit Patient</a></li>
+                    {% elif role == 'nursing' %}
+                    <li class="nav-item"><a class="nav-link" href="/nursing/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    {% elif role == 'operation_theatre' %}
+                    <li class="nav-item"><a class="nav-link" href="/operation-theatre/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    {% elif role == 'blood_bank' %}
+                    <li class="nav-item"><a class="nav-link" href="/blood-bank/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    {% elif role == 'accounts' %}
+                    <li class="nav-item"><a class="nav-link" href="/reports/accounts/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    {% elif role == 'medical_records' %}
+                    <li class="nav-item"><a class="nav-link" href="/medical-records/"><i class="ti ti-home-2 me-2"></i>Dashboard</a></li>
+                    {% endif %}
+                    <li class="nav-item mt-3"><a class="nav-link text-danger" href="/accounts/logout/"><i class="ti ti-logout me-2"></i>Logout</a></li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div id="content" class="position-relative h-100">
+            <!-- Top Bar (matching original Dasher) -->
+            <div class="navbar-glass navbar navbar-expand-lg px-0 px-lg-4">
+                <div class="container-fluid px-lg-0">
+                    <div class="d-flex align-items-center gap-4">
+                        <!-- Mobile toggle -->
+                        <div class="d-block d-lg-none">
+                            <a class="text-inherit" data-bs-toggle="offcanvas" href="#offcanvasExample" role="button" aria-controls="offcanvasExample">
+                                <i class="ti ti-menu-2 fs-4"></i>
+                            </a>
+                        </div>
+                        <!-- Sidebar collapse/expand toggle (desktop) -->
+                        <div class="d-none d-lg-block">
+                            <a class="sidebar-toggle d-flex texttooltip p-3" href="javascript:void(0)" data-template="collapseMessage">
+                                <span class="collapse-mini">
+                                    <i class="ti ti-arrow-bar-left text-secondary"></i>
+                                </span>
+                                <span class="collapse-expanded">
+                                    <i class="ti ti-arrow-bar-right text-secondary"></i>
+                                    <div id="collapseMessage" class="d-none">
+                                        <span class="small">Collapse</span>
+                                    </div>
+                                </span>
+                            </a>
+                        </div>
+                        <!-- Breadcrumb -->
+                        <nav aria-label="breadcrumb">
+                            <ol class="breadcrumb mb-0">
+                                <li class="breadcrumb-item"><a href="/">Home</a></li>
+                                {% block breadcrumb %}<li class="breadcrumb-item active">Dashboard</li>{% endblock %}
+                            </ol>
+                        </nav>
+                    </div>
+
+                    <!-- Right side nav items -->
+                    <ul class="list-unstyled d-flex align-items-center mb-0 gap-2">
+                        <!-- Search -->
+                        <li>
+                            <button type="button" class="btn btn-white" data-bs-toggle="modal" data-bs-target="#searchModal">
+                                <span><i class="ti ti-search"></i></span>
+                                <small class="ms-1">⌘K</small>
+                            </button>
+                        </li>
+                        <!-- Light/Dark/Auto mode toggle -->
+                        <li>
+                            <div class="dropdown">
+                                <button class="btn btn-ghost btn-icon rounded-circle d-flex align-items-center" type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+                                    <i class="ti theme-icon-active lh-1 fs-5"><i class="ti theme-icon ti-sun"></i></i>
+                                    <span class="visually-hidden bs-theme-text">Toggle theme</span>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow">
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center active" data-bs-theme-value="light" aria-pressed="true">
+                                            <i class="ti theme-icon ti ti-sun"></i>
+                                            <span class="ms-2">Light</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="dark" aria-pressed="false">
+                                            <i class="ti theme-icon ti-moon-stars"></i>
+                                            <span class="ms-2">Dark</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center" data-bs-theme-value="auto" aria-pressed="false">
+                                            <i class="ti theme-icon ti-circle-half-2"></i>
+                                            <span class="ms-2">Auto</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
+                        </li>
+                        <!-- Notification bell -->
+                        <li>
+                            <a class="position-relative btn-icon btn-ghost btn rounded-circle" data-bs-toggle="offcanvas" href="#offcanvasNotification" role="button" aria-controls="offcanvasNotification">
+                                <i class="ti ti-bell fs-5"></i>
+                                <span class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-danger mt-2 ms-n2">
+                                    {% block notification_count %}0{% endblock %}
+                                    <span class="visually-hidden">unread messages</span>
+                                </span>
+                            </a>
+                        </li>
+                        <!-- User profile dropdown -->
+                        <li class="ms-3 dropdown">
+                            <a href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                <img src="/static/images/avatar/avatar-1.jpg" alt="" class="avatar avatar-sm rounded-circle"/>
+                            </a>
+                            <div class="dropdown-menu dropdown-menu-end dropdown-menu-md p-0">
+                                <div>
+                                    <div class="d-flex gap-3 align-items-center border-dashed border-bottom px-4 py-4">
+                                        <img src="/static/images/avatar/avatar-1.jpg" alt="" class="avatar avatar-md rounded-circle"/>
+                                        <div>
+                                            <h4 class="mb-0 fs-5">{{ user.first_name|default:user.username }}</h4>
+                                            <p class="mb-0 text-secondary small">{{ user.role_display|default:user.role }}</p>
+                                        </div>
+                                    </div>
+                                    <div class="p-3 d-flex flex-column gap-1">
+                                        <a href="{{ user.get_dashboard_url }}" class="dropdown-item d-flex align-items-center gap-2">
+                                            <span><i class="ti ti-home-2"></i></span>
+                                            <span>Dashboard</span>
+                                        </a>
+                                        <a href="/patients/search/" class="dropdown-item d-flex align-items-center gap-2">
+                                            <span><i class="ti ti-search"></i></span>
+                                            <span>Search Patient</span>
+                                        </a>
+                                        <a href="/accounts/logout/" class="dropdown-item d-flex align-items-center gap-2 text-danger">
+                                            <span><i class="ti ti-logout"></i></span>
+                                            <span>Logout</span>
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Notification Offcanvas -->
+            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasNotification" aria-labelledby="offcanvasNotificationLabel">
+                <div class="offcanvas-header border-dashed border-bottom">
+                    <h5 class="offcanvas-title" id="offcanvasNotificationLabel">Notifications</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                </div>
+                <div class="offcanvas-body p-0" data-simplebar style="height:800px">
+                    <ul class="nav nav-tabs nav-justified border-dashed border-bottom mx-5 mt-4" id="notificationTab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="pills-all-tab" data-bs-toggle="tab" data-bs-target="#pills-all" type="button" role="tab" aria-controls="pills-all" aria-selected="true">All</button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="pills-archive-tab" data-bs-toggle="tab" data-bs-target="#pills-archive" type="button" role="tab" aria-controls="pills-archive" aria-selected="false">Archive</button>
+                        </li>
+                    </ul>
+                    <div class="tab-content" id="notificationTabContent">
+                        <div class="tab-pane fade show active" id="pills-all" role="tabpanel" aria-labelledby="pills-all-tab" tabindex="0">
+                            <div data-simplebar style="height: 700px">
+                                <div class="list-group list-group-flush">
+                                    {% block notifications %}
+                                    <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex gap-4 align-items-center">
+                                                <div class="icon-shape icon-md bg-success-subtle text-success-emphasis rounded-circle">
+                                                    <i class="ti ti-check fs-5"></i>
+                                                </div>
+                                                <div class="d-flex flex-column gap-1">
+                                                    <div>System is running smoothly.</div>
+                                                    <small class="text-secondary">Just now</small>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </a>
+                                    {% endblock %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="tab-pane fade" id="pills-archive" role="tabpanel" aria-labelledby="pills-archive-tab" tabindex="0">
+                            <div data-simplebar style="height: 700px">
+                                <div class="list-group list-group-flush">
+                                    <a href="#" class="list-group-item list-group-item-action p-5 border-dashed border-bottom">
+                                        <div class="d-flex justify-content-between">
+                                            <div class="d-flex flex-column gap-1">
+                                                <div>Welcome to Hamro Hospital Management System.</div>
+                                                <small class="text-secondary">System initialized</small>
+                                            </div>
+                                        </div>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="px-5 py-3 text-center bg-white position-absolute bottom-0 border-top border-dashed w-100 text-center">
+                    <a href="#" class="text-inherit">View all</a>
+                </div>
+            </div>
+
+            <!-- Search Modal -->
+            <div class="modal fade" id="searchModal" tabindex="-1" aria-labelledby="searchModalLabel" aria-hidden="true">
+                <div class="modal-dialog modal-dialog-centered">
+                    <div class="modal-content">
+                        <div class="modal-header border-0">
+                            <input type="search" class="form-control border-0 rounded-0 ps-0 form-focus-none" id="globalSearchInput" placeholder="Search patients, bills, doctors..." aria-label="Search" aria-describedby="search-addon"/>
+                            <button type="button" class="btn btn-white btn-sm" data-bs-dismiss="modal" aria-label="Close">Esc</button>
+                        </div>
+                        <div class="modal-body p-4">
+                            <ul class="list-group list-group-flush">
+                                {% block search_items %}
+                                <li class="list-group-item px-0 py-2"><a href="/patients/search/" class="text-inherit"><i class="ti ti-user me-2"></i>Search Patients</a></li>
+                                <li class="list-group-item px-0 py-2"><a href="/billing/search/" class="text-inherit"><i class="ti ti-receipt me-2"></i>Search Bills</a></li>
+                                <li class="list-group-item px-0 py-2"><a href="/laboratory/search/" class="text-inherit"><i class="ti ti-flask me-2"></i>Lab Search</a></li>
+                                <li class="list-group-item px-0 py-2"><a href="/radiology/search/" class="text-inherit"><i class="ti ti-x-ray me-2"></i>Radiology Search</a></li>
+                                {% endblock %}
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Page Content Container -->
+            <div class="custom-container">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/simplebar@6/dist/simplebar.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/apexcharts/dist/apexcharts.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/choices.js/public/assets/scripts/choices.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/swiper@11/swiper-bundle.min.js"></script>
+    <!-- Theme JS -->
+    <script src="/static/js/vendors/sidebarnav.js"></script>
+    <script src="/static/js/vendors/chart.js"></script>
+    <script src="/static/js/vendors/choice.js"></script>
+    <script src="/static/js/vendors/password.js"></script>
+    <script src="/static/js/vendors/swiper.js"></script>
+    <script src="/static/js/main.js"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

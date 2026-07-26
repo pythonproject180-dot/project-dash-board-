@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en" data-bs-theme="light" id="htmlRoot">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hamro Hospital - Quality Healthcare in Nepal</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link href="/static/css/bootstrap.min.css" rel="stylesheet"/>
+    <link href="/static/css/aos.css" rel="stylesheet"/>
+    <link href="/static/css/swiper-bundle.min.css" rel="stylesheet"/>
+    <link rel="stylesheet" href="/static/css/all.min.css"/>
+    <link rel="stylesheet" href="/static/css/magnific-popup.css"/>
+    <link rel="stylesheet" href="/static/css/style.css"/>
+    <style>
+        :root {
+            --pur: #6C63FF;
+            --pur2: #8B5CF6;
+            --grad: linear-gradient(135deg, #6C63FF 0%, #8B5CF6 50%, #A78BFA 100%);
+        }
+        .logo-i i { color: var(--pur); }
+        .gt { background: var(--grad); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text; }
+        .hbadge { background: rgba(108,99,255,.12); color: var(--pur); border: 1px solid rgba(108,99,255,.2); }
+        .bgrd { background: var(--grad); border: none; }
+        .nav-link:hover { color: var(--pur); }
+    </style>
+</head>
+<body>
+<div id="landing">
+    <!-- NAVBAR -->
+    <nav id="nbar">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between w-100">
+                <a href="/" class="d-flex align-items-center gap-2" style="font-size:1.2rem;font-weight:700;color:var(--tx)">
+                    <div class="logo-i"><i class="fa-solid fa-hospital"></i></div>
+                    <span>Hamro Hospital</span>
+                </a>
+                <div class="d-none d-lg-flex align-items-center gap-1 mx-auto">
+                    <a href="/" class="nav-link">Home</a>
+                    <a href="/about/" class="nav-link">About</a>
+                    <a href="/departments/" class="nav-link">Departments</a>
+                    <a href="/doctors/" class="nav-link">Doctors</a>
+                    <a href="/services/" class="nav-link">Services</a>
+                    <a href="/contact/" class="nav-link">Contact</a>
+                </div>
+                <div class="d-flex align-items-center gap-2">
+                    <button class="boc px-3 py-2 d-none d-sm-flex align-items-center gap-1" onclick="window.location='/portal/login/'">
+                        <i class="fa-regular fa-user fa-sm"></i> Patient Login
+                    </button>
+                    <button class="bgrd btn px-3 py-2 d-none d-sm-flex align-items-center gap-1" onclick="window.location='/appointments/book/'">
+                        Book Appointment <i class="fa-solid fa-arrow-right fa-sm"></i>
+                    </button>
+                    <button class="boc d-lg-none px-2 py-2" id="mbtog" style="border-radius:10px">
+                        <i class="fa-solid fa-bars" id="barIcon"></i>
+                        <i class="fa-solid fa-xmark" id="xIcon" style="display:none"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Mobile Menu -->
+    <div id="mbmenu">
+        <a href="/" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Home</a>
+        <a href="/about/" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">About</a>
+        <a href="/departments/" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Departments</a>
+        <a href="/doctors/" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Doctors</a>
+        <a href="/services/" class="nav-link d-block py-3 border-bottom" style="border-color:var(--bd)!important">Services</a>
+        <a href="/contact/" class="nav-link d-block py-3">Contact</a>
+        <div class="d-flex gap-2 mt-3">
+            <button class="boc flex-fill py-2 btn" onclick="window.location='/portal/login/'">Patient Login</button>
+            <button class="bgrd flex-fill py-2 btn" onclick="window.location='/appointments/book/'">Book Appointment</button>
+        </div>
+    </div>
+
+    <!-- HERO SECTION -->
+    <section id="hero">
+        <div class="aur aur-a" style="top:-80px;left:-120px"></div>
+        <div class="aur aur-b" style="top:180px;right:-180px"></div>
+        <div class="aur aur-a" style="bottom:-80px;left:45%;transform:translateX(-50%);opacity:.4"></div>
+        <div class="container position-relative" style="z-index:2">
+            <div class="text-center">
+                <div class="afu" style="animation-delay:.05s"><span class="hbadge"><span class="bdot"></span>Now with Online Appointment Booking & eSewa Payment</span></div>
+                <h1 class="h1 afu" style="animation-delay:.12s">Quality Healthcare<br>for <span class="gt">Everyone</span></h1>
+                <p class="mx-auto afu" style="max-width:580px;font-size:clamp(.95rem,1.8vw,1.2rem);color:var(--tx2);margin-bottom:36px;animation-delay:.2s">Hamro Hospital provides comprehensive medical services — from emergency care to specialized treatments. Expert doctors, modern facilities, and compassionate care for every patient in Nepal.</p>
+                <div class="d-flex align-items-center justify-content-center gap-3 flex-wrap afu" style="animation-delay:.28s">
+                    <button class="bgrd btn px-4 py-3 fs-6" onclick="window.location='/appointments/book/'">Book Appointment — No Waiting</button>
+                    <a href="#features" class="boc btn px-4 py-3 fs-6"><i class="fa-solid fa-circle-play me-2" style="color:var(--pur)"></i>Our Services</a>
+                </div>
+                <div class="mt-5 afu" style="animation-delay:.4s">
+                    <p style="font-size:.71rem;color:var(--tx3);text-transform:uppercase;letter-spacing:.12em;margin-bottom:14px">Trusted by communities across Nepal</p>
+                    <div class="d-flex align-items-center justify-content-center gap-4 flex-wrap">
+                        <span class="tlog">Kathmandu</span><span class="tlog">Pokhara</span><span class="tlog">Biratnagar</span><span class="tlog">Lalitpur</span><span class="tlog">Bhaktapur</span><span class="tlog">Chitwan</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dashboard Preview -->
+            <div class="row justify-content-center mt-5">
+                <div class="col-lg-11 adi">
+                    <div class="dwrap">
+                        <div class="dtbar"><span class="dd" style="background:#ff5f57"></span><span class="dd" style="background:#ffbd2e"></span><span class="dd" style="background:#28c840"></span><span class="ms-auto me-auto" style="font-size:.76rem;color:var(--tx3)">Hamro Hospital Dashboard — hamrohospital.com</span></div>
+                        <div class="dgrid">
+                            <div class="dside">
+                                <div style="font-size:.64rem;text-transform:uppercase;letter-spacing:.1em;color:var(--tx3);padding:0 10px 10px;font-weight:700">Overview</div>
+                                <button class="dsi on"><i class="fa-solid fa-gauge-high"></i> Dashboard</button>
+                                <button class="dsi"><i class="fa-solid fa-hospital-user"></i> Patients</button>
+                                <button class="dsi"><i class="fa-solid fa-user-doctor"></i> Doctors</button>
+                                <button class="dsi"><i class="fa-solid fa-flask"></i> Laboratory</button>
+                                <button class="dsi"><i class="fa-solid fa-pills"></i> Pharmacy</button>
+                            </div>
+                            <div class="p-3">
+                                <div class="row g-2 mb-3">
+                                    <div class="col-6 col-sm-3">
+                                        <div class="stpill">
+                                            <div style="font-size:1.4rem;font-weight:700" class="gt">{{ total_patients|default:"2.4K" }}</div>
+                                            <div style="font-size:.67rem;color:var(--tx3)">Registered Patients</div>
+                                            <div style="font-size:.67rem;color:#34d399;font-weight:600"><i class="fa-solid fa-caret-up me-1"></i>18.4%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-sm-3">
+                                        <div class="stpill">
+                                            <div style="font-size:1.4rem;font-weight:700">98.2%</div>
+                                            <div style="font-size:.67rem;color:var(--tx3)">Patient Satisfaction</div>
+                                            <div style="font-size:.67rem;color:#34d399;font-weight:600"><i class="fa-solid fa-caret-up me-1"></i>3.1%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-sm-3">
+                                        <div class="stpill">
+                                            <div style="font-size:1.4rem;font-weight:700">{{ total_doctors|default:"150+" }}</div>
+                                            <div style="font-size:.67rem;color:var(--tx3)">Specialist Doctors</div>
+                                            <div style="font-size:.67rem;color:#34d399;font-weight:600"><i class="fa-solid fa-caret-up me-1"></i>12%</div>
+                                        </div>
+                                    </div>
+                                    <div class="col-6 col-sm-3">
+                                        <div class="stpill">
+                                            <div style="font-size:1.4rem;font-weight:700">24/7</div>
+                                            <div style="font-size:.67rem;color:var(--tx3)">Emergency Service</div>
+                                            <div style="font-size:.67rem;color:#60a5fa;font-weight:600"><i class="fa-solid fa-check me-1"></i>Always</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FEATURES SECTION -->
+    <section id="features" style="padding:80px 0">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 style="font-size:2rem;font-weight:700">Our <span class="gt">Medical Services</span></h2>
+                <p style="color:var(--tx2);max-width:600px;margin:0 auto">Comprehensive healthcare services designed for the Nepali community, from emergency care to specialized treatments.</p>
+            </div>
+            <div class="row g-4">
+                {% for dept in departments %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="gc p-4 text-center">
+                        <div style="width:56px;height:56px;border-radius:16px;background:rgba(108,99,255,.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px">
+                            <i class="fa-solid fa-hospital fa-xl" style="color:var(--pur)"></i>
+                        </div>
+                        <h5 style="font-weight:600;margin-bottom:8px">{{ dept.name }}</h5>
+                        <p style="color:var(--tx2);font-size:.85rem">{{ dept.description|truncatewords:20 }}</p>
+                        {% if dept.consultation_fee %}
+                        <p style="color:var(--pur);font-weight:600;font-size:.85rem">Consultation: NPR {{ dept.consultation_fee }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not departments %}
+                <div class="col-md-4 col-sm-6">
+                    <div class="gc p-4 text-center">
+                        <div style="width:56px;height:56px;border-radius:16px;background:rgba(108,99,255,.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px"><i class="fa-solid fa-heartbeat fa-xl" style="color:var(--pur)"></i></div>
+                        <h5 style="font-weight:600">Emergency & Critical Care</h5>
+                        <p style="color:var(--tx2);font-size:.85rem">24/7 emergency services with ICU and critical care specialists.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="gc p-4 text-center">
+                        <div style="width:56px;height:56px;border-radius:16px;background:rgba(108,99,255,.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px"><i class="fa-solid fa-user-doctor fa-xl" style="color:var(--pur)"></i></div>
+                        <h5 style="font-weight:600">OPD & Consultations</h5>
+                        <p style="color:var(--tx2);font-size:.85rem">Expert consultations across all medical specialties.</p>
+                    </div>
+                </div>
+                <div class="col-md-4 col-sm-6">
+                    <div class="gc p-4 text-center">
+                        <div style="width:56px;height:56px;border-radius:16px;background:rgba(108,99,255,.1);display:flex;align-items:center;justify-content:center;margin-bottom:16px"><i class="fa-solid fa-flask fa-xl" style="color:var(--pur)"></i></div>
+                        <h5 style="font-weight:600">Laboratory & Diagnostics</h5>
+                        <p style="color:var(--tx2);font-size:.85rem">Full pathology and diagnostic laboratory services.</p>
+                    </div>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- DOCTORS SECTION -->
+    <section style="padding:80px 0;background:var(--sf)">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 style="font-size:2rem;font-weight:700">Our <span class="gt">Expert Doctors</span></h2>
+                <p style="color:var(--tx2)">Experienced and compassionate medical professionals dedicated to your health.</p>
+            </div>
+            <div class="row g-4">
+                {% for doc in doctors %}
+                <div class="col-lg-3 col-md-4 col-sm-6">
+                    <div class="gc p-4 text-center">
+                        {% if doc.photo %}
+                        <img src="{{ doc.photo.url }}" alt="{{ doc.name }}" style="width:80px;height:80px;border-radius:16px;object-fit:cover;margin-bottom:12px">
+                        {% else %}
+                        <div style="width:80px;height:80px;border-radius:16px;background:var(--grad);display:flex;align-items:center;justify-content:center;margin-bottom:12px">
+                            <i class="fa-solid fa-user-doctor fa-xl" style="color:white"></i>
+                        </div>
+                        {% endif %}
+                        <h6 style="font-weight:600">Dr. {{ doc.name }}</h6>
+                        <p style="color:var(--tx3);font-size:.78rem">{{ doc.specialization }}</p>
+                        {% if doc.department %}
+                        <span class="bst" style="font-size:.68rem;color:var(--pur)">{{ doc.department.name }}</span>
+                        {% endif %}
+                    </div>
+                </div>
+                {% endfor %}
+            </div>
+        </div>
+    </section>
+
+    <!-- TESTIMONIALS -->
+    <section style="padding:80px 0">
+        <div class="container">
+            <div class="text-center mb-5">
+                <h2 style="font-size:2rem;font-weight:700">Patient <span class="gt">Testimonials</span></h2>
+                <p style="color:var(--tx2)">What our patients say about their experience at Hamro Hospital.</p>
+            </div>
+            <div class="row g-4">
+                {% for t in testimonials %}
+                <div class="col-md-3 col-sm-6">
+                    <div class="gc p-4">
+                        <div class="d-flex align-items-center gap-2 mb-3">
+                            {% if t.photo %}
+                            <img src="{{ t.photo.url }}" alt="{{ t.name }}" style="width:40px;height:40px;border-radius:12px;object-fit:cover">
+                            {% else %}
+                            <div style="width:40px;height:40px;border-radius:12px;background:rgba(108,99,255,.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-user" style="color:var(--pur)"></i></div>
+                            {% endif %}
+                            <div><div style="font-weight:600;font-size:.85rem">{{ t.name }}</div><div style="font-size:.7rem;color:var(--tx3)">{{ t.role }}</div></div>
+                        </div>
+                        <p style="color:var(--tx2);font-size:.82rem">{{ t.content|truncatewords:15 }}</p>
+                        <div style="color:#FFD700;font-size:.7rem"><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i><i class="fa-solid fa-star"></i></div>
+                    </div>
+                </div>
+                {% endfor %}
+                {% if not testimonials %}
+                <div class="col-md-3 col-sm-6"><div class="gc p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3"><div style="width:40px;height:40px;border-radius:12px;background:rgba(108,99,255,.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-user" style="color:var(--pur)"></i></div><div><div style="font-weight:600;font-size:.85rem">Ramesh Sharma</div><div style="font-size:.7rem;color:var(--tx3)">Kathmandu</div></div></div>
+                    <p style="color:var(--tx2);font-size:.82rem">Excellent care and professional doctors. I was treated with respect and my health improved significantly.</p>
+                </div></div>
+                <div class="col-md-3 col-sm-6"><div class="gc p-4">
+                    <div class="d-flex align-items-center gap-2 mb-3"><div style="width:40px;height:40px;border-radius:12px;background:rgba(108,99,255,.1);display:flex;align-items:center;justify-content:center"><i class="fa-solid fa-user" style="color:var(--pur)"></i></div><div><div style="font-weight:600;font-size:.85rem">Sita Devi</div><div style="font-size:.7rem;color:var(--tx3)">Pokhara</div></div></div>
+                    <p style="color:var(--tx2);font-size:.82rem">The hospital staff was very caring. Quick service and affordable treatment. Highly recommended!</p>
+                </div></div>
+                {% endif %}
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA SECTION -->
+    <section style="padding:80px 0;background:var(--sf)">
+        <div class="container text-center">
+            <h2 style="font-size:2rem;font-weight:700;margin-bottom:16px">Ready to Book Your <span class="gt">Appointment</span>?</h2>
+            <p style="color:var(--tx2);max-width:500px;margin:0 auto 32px">Book your appointment online and skip the queue. Pay securely via eSewa or visit our registration counter.</p>
+            <div class="d-flex justify-content-center gap-3">
+                <button class="bgrd btn px-4 py-3 fs-6" onclick="window.location='/appointments/book/'">Book Appointment Now</button>
+                <a href="/contact/" class="boc btn px-4 py-3 fs-6"><i class="fa-solid fa-phone me-2"></i>Contact Us</a>
+            </div>
+        </div>
+    </section>
+
+    <!-- FOOTER -->
+    <footer style="padding:40px 0;border-top:1px solid var(--bd)">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-md-4">
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <div class="logo-i"><i class="fa-solid fa-hospital"></i></div>
+                        <span style="font-weight:700;font-size:1.1rem">Hamro Hospital</span>
+                    </div>
+                    <p style="color:var(--tx2);font-size:.85rem">Quality healthcare for everyone in Nepal. 24/7 emergency services, expert doctors, and compassionate care.</p>
+                </div>
+                <div class="col-md-4">
+                    <h6 style="font-weight:600;margin-bottom:12px">Quick Links</h6>
+                    <div style="font-size:.85rem">
+                        <a href="/about/" style="color:var(--tx2);display:block;padding:4px 0">About Us</a>
+                        <a href="/departments/" style="color:var(--tx2);display:block;padding:4px 0">Departments</a>
+                        <a href="/doctors/" style="color:var(--tx2);display:block;padding:4px 0">Our Doctors</a>
+                        <a href="/services/" style="color:var(--tx2);display:block;padding:4px 0">Services</a>
+                        <a href="/contact/" style="color:var(--tx2);display:block;padding:4px 0">Contact</a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <h6 style="font-weight:600;margin-bottom:12px">Contact Info</h6>
+                    <div style="font-size:.85rem;color:var(--tx2)">
+                        <p><i class="fa-solid fa-location-dot me-2" style="color:var(--pur)"></i> Kathmandu, Nepal</p>
+                        <p><i class="fa-solid fa-phone me-2" style="color:var(--pur)"></i> +977-01-XXXXXXX</p>
+                        <p><i class="fa-solid fa-envelope me-2" style="color:var(--pur)"></i> info@hamrohospital.com</p>
+                        <p><i class="fa-solid fa-clock me-2" style="color:var(--pur)"></i> 24/7 Emergency</p>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-4" style="padding-top:20px;border-top:1px solid var(--bd);color:var(--tx3);font-size:.75rem">
+                © 2026 Hamro Hospital. All rights reserved.
+            </div>
+        </div>
+    </footer>
+</div>
+
+<script src="/static/js/jquery-3.7.1.min.js"></script>
+<script src="/static/js/bootstrap.bundle.min.js"></script>
+<script src="/static/js/aos.js"></script>
+<script src="/static/js/main.js"></script>
+<script>
+    AOS.init({ duration: 800, once: true });
+    // Mobile menu toggle
+    const mbtog = document.getElementById('mbtog');
+    const barIcon = document.getElementById('barIcon');
+    const xIcon = document.getElementById('xIcon');
+    const mbmenu = document.getElementById('mbmenu');
+    if (mbtog) {
+        mbtog.addEventListener('click', function() {
+            mbmenu.style.display = mbmenu.style.display === 'block' ? 'none' : 'block';
+            barIcon.style.display = barIcon.style.display === 'none' ? 'inline' : 'none';
+            xIcon.style.display = xIcon.style.display === 'none' ? 'inline' : 'none';
+        });
+    }
+</script>
+
+    <script src="/static/js/website-theme.js"></script>
+</body>
+</html>
