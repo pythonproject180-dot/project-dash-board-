@@ -112,11 +112,12 @@ After running `seed_all`, the database includes:
 - 8 gallery image placeholders
 
 ### Patient Portal Signup
-1. Visit `/portal/signup/`
-2. Step 1: Enter Hospital ID (e.g., HT-000001) + phone number
-3. Step 2: Enter OTP (demo OTP shown on screen)
-4. Step 3: Set password
-5. Redirect to `/portal/dashboard/` with full patient data view
+Two signup modes available:
+1. **Existing Patient** — Enter Hospital ID + phone number → OTP verification → Set password
+2. **New Patient (Self-Registration)** — Fill in name, gender, phone, age, address → Hospital ID auto-generated from shared sequence → OTP verification → Set password
+   - Creates new Patient record with `registration_source='online'`
+   - Hospital IDs remain sequential regardless of registration method (HT-000001 online, HT-000002 counter, HT-000003 online)
+   - If phone number already exists as patient, auto-links to existing record
 
 ---
 
