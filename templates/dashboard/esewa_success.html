@@ -1,0 +1,40 @@
+{% extends "dashboard/base.html" %}
+{% block title %}eSewa Payment Success - Hamro Hospital{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/billing/">Cash Counter</a></li>
+<li class="breadcrumb-item active">eSewa Payment Success</li>
+{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-8">
+                <div class="mb-4">
+                    <i class="ti ti-check-circle fs-0 text-success" style="font-size: 80px;"></i>
+                </div>
+                <h2 class="text-success mb-3">✅ Payment Successful!</h2>
+                {% if bill %}
+                <p>Bill <strong>{{ bill.bill_id }}</strong> has been paid via eSewa.</p>
+                <p>Amount: <strong>NPR {{ bill.net_amount }}</strong></p>
+                <p>Patient: <strong>{{ bill.patient.full_name }}</strong> ({{ bill.patient.patient_id }})</p>
+                {% if esewa_ref %}
+                <p>eSewa Reference: <strong>{{ esewa_ref }}</strong></p>
+                {% endif %}
+                {% else %}
+                <p>{{ message|default:"eSewa payment processed successfully (demo mode)." }}</p>
+                {% endif %}
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    {% if bill %}
+                    <a href="/billing/detail/{{ bill.pk }}/" class="btn btn-primary btn-lg">
+                        <i class="ti ti-receipt me-2"></i>View Receipt
+                    </a>
+                    {% endif %}
+                    <a href="/billing/" class="btn btn-outline-secondary btn-lg">
+                        <i class="ti ti-arrow-left me-1"></i>Return to Dashboard
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

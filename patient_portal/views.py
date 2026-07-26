@@ -3,6 +3,10 @@ from patients.models import Patient, OPDVisit
 from billing.models import Bill
 from consultations.models import LabTestRequest, RadiologyRequest
 from pharmacy.models import PharmacySale
+from admissions.models import Admission
+from insurance.models import InsuranceClaim
+from medical_records.models import MedicalRecord
+from utils.sms_otp import send_sms_otp
 from insurance.models import InsuranceClaim
 from admissions.models import Admission
 from medical_records.models import MedicalRecord
@@ -38,14 +42,16 @@ def portal_signup(request):
                             'error': 'Account already exists. Please login instead.', 'step': '1',
                             'signup_mode': 'existing',
                         })
-                    otp = str(random.randint(100000, 999999))
+                    sms_result = send_sms_otp(phone, 'Portal Signup Verification')
+                    otp = sms_result['otp']
                     request.session['portal_otp'] = otp
                     request.session['portal_patient_pk'] = patient.pk
                     request.session['portal_phone'] = phone
+                    otp_display = sms_result['message'] if sms_result['simulated'] else f'OTP sent to {phone}'
                     return render(request, 'portal/signup.html', {
-                        'step': '2', 'phone': phone, 'otp_hint': f'Demo OTP: {otp}',
+                        'step': '2', 'phone': phone, 'otp_hint': otp_display,
                         'hospital_id': hospital_id, 'patient_name': patient.full_name,
-                        'signup_mode': 'existing',
+                        'signup_mode': 'existing', 'sms_simulated': sms_result.get('simulated', False),
                     })
                 else:
                     return render(request, 'portal/signup.html', {
@@ -90,16 +96,18 @@ def portal_signup(request):
                             'form_data': request.POST.dict(),
                         })
                     # Patient exists but no portal account — offer to link
-                    otp = str(random.randint(100000, 999999))
+                    sms_result = send_sms_otp(phone, 'Portal Signup Verification')
+                    otp = sms_result['otp']
                     request.session['portal_otp'] = otp
                     request.session['portal_patient_pk'] = existing_patient.pk
                     request.session['portal_phone'] = phone
                     request.session['signup_mode'] = 'existing'
+                    otp_display = sms_result['message'] if sms_result['simulated'] else f'OTP sent to {phone}'
                     return render(request, 'portal/signup.html', {
-                        'step': '2', 'phone': phone, 'otp_hint': f'Demo OTP: {otp}',
+                        'step': '2', 'phone': phone, 'otp_hint': otp_display,
                         'hospital_id': existing_patient.patient_id,
                         'patient_name': existing_patient.full_name,
-                        'signup_mode': 'existing',
+                        'signup_mode': 'existing', 'sms_simulated': sms_result.get('simulated', False),
                         'info': f'Your phone is already registered as {existing_patient.patient_id}. Creating portal account for this patient.',
                     })
 
@@ -137,19 +145,22 @@ def portal_signup(request):
                     uploaded_by='portal_signup', staff_name='Online Registration',
                 )
 
-                # Generate OTP for phone verification
-                otp = str(random.randint(100000, 999999))
+                # Generate OTP for phone verification via SMS gateway
+                sms_result = send_sms_otp(phone, 'New Patient Portal Signup')
+                otp = sms_result['otp']
                 request.session['portal_otp'] = otp
                 request.session['portal_patient_pk'] = new_patient.pk
                 request.session['portal_phone'] = phone
                 request.session['signup_mode'] = 'new'
+                otp_display = sms_result['message'] if sms_result['simulated'] else f'OTP sent to {phone}'
 
                 return render(request, 'portal/signup.html', {
-                    'step': '2', 'phone': phone, 'otp_hint': f'Demo OTP: {otp}',
+                    'step': '2', 'phone': phone, 'otp_hint': otp_display,
                     'hospital_id': new_patient.patient_id,
                     'patient_name': new_patient.full_name,
                     'signup_mode': 'new',
                     'info': f'Registration successful! Your Hospital ID is {new_patient.patient_id}. Please verify your phone to complete signup.',
+                    'sms_simulated': sms_result.get('simulated', False),
                 })
 
         elif step == '2':
@@ -244,12 +255,15 @@ def portal_forgot_password(request):
             from .models import PortalUser
             portal = PortalUser.objects.filter(phone=phone).first()
             if portal:
-                otp = str(random.randint(100000, 999999))
+                sms_result = send_sms_otp(phone, 'Forgot Password Recovery')
+                otp = sms_result['otp']
                 request.session['forgot_otp'] = otp
                 request.session['forgot_portal_pk'] = portal.pk
+                otp_display = sms_result['message'] if sms_result['simulated'] else f'OTP sent to {phone}'
                 return render(request, 'portal/forgot_password.html', {
                     'step': '2', 'phone': phone,
-                    'otp_hint': f'Demo OTP: {otp}',
+                    'otp_hint': otp_display,
+                    'sms_simulated': sms_result.get('simulated', False),
                 })
             else:
                 return render(request, 'portal/forgot_password.html', {

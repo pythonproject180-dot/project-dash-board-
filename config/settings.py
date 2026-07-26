@@ -197,6 +197,16 @@ JAZZMIN_UI_TEMPLATES = {
 ESEWA_MERCHANT_CODE = os.environ.get('ESEWA_MERCHANT_CODE', 'EPAYTEST')
 ESEWA_MERCHANT_SECRET = os.environ.get('ESEWA_MERCHANT_SECRET', '8gBm;6&z')
 
+# SMS OTP Gateway configuration
+# Options: 'simulated' (dev), 'sparrow', 'vasani', 'twilio' (production)
+SMS_GATEWAY = os.environ.get('SMS_GATEWAY', 'simulated')
+SPARROW_API_KEY = os.environ.get('SPARROW_API_KEY', '')
+VASANI_API_KEY = os.environ.get('VASANI_API_KEY', '')
+TWILIO_ACCOUNT_SID = os.environ.get('TWILIO_ACCOUNT_SID', '')
+TWILIO_AUTH_TOKEN = os.environ.get('TWILIO_AUTH_TOKEN', '')
+TWILIO_PHONE_NUMBER = os.environ.get('TWILIO_PHONE_NUMBER', '')
+OTP_EXPIRY_MINUTES = int(os.environ.get('OTP_EXPIRY_MINUTES', '5'))
+
 # Registration fees
 REGISTRATION_FEE_NEW = 100  # NPR for new patient
 REGISTRATION_FEE_OLD = 50   # NPR for returning patient

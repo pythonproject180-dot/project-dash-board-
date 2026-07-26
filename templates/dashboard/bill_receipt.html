@@ -209,6 +209,15 @@
     <a href="{{ user.get_dashboard_url }}" class="btn btn-outline-secondary">
         <i class="ti ti-home-2 me-1"></i> Dashboard
     </a>
+    {% if bill.payment_method == 'esewa' and not bill.paid %}
+    <a href="/billing/esewa/initiate/{{ bill.pk }}/" class="btn btn-success">
+        <i class="ti ti-credit-card me-1"></i> Pay via eSewa
+    </a>
+    {% elif not bill.paid %}
+    <a href="/billing/esewa/initiate/{{ bill.pk }}/" class="btn btn-outline-success">
+        <i class="ti ti-credit-card me-1"></i> eSewa Payment
+    </a>
+    {% endif %}
 </div>
 </div></div></div>
 {% endblock %}

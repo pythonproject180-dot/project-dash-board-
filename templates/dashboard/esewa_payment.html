@@ -1,0 +1,65 @@
+{% extends "dashboard/base.html" %}
+{% block title %}eSewa Payment - Hamro Hospital{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/billing/">Cash Counter</a></li>
+<li class="breadcrumb-item active">eSewa Payment</li>
+{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-xl-8 col-lg-6">
+        <div class="bg-gradient-mixed p-8 py-10 rounded-3 p-lg-7">
+            <h1 class="fs-3">💳 eSewa Payment</h1>
+            <p>You are about to pay <strong>NPR {{ total_amount }}</strong> via eSewa for bill <strong>{{ bill.bill_id }}</strong>.</p>
+            <p>Patient: <strong>{{ bill.patient.full_name }}</strong> ({{ bill.patient.patient_id }})</p>
+        </div>
+    </div>
+    <div class="col-xl-4 col-lg-6">
+        <div class="card card-lg"><div class="card-body">
+            <h5 class="mb-3">Payment Summary</h5>
+            <div class="d-flex justify-content-between mb-2"><span>Total Amount</span><span class="fw-bold">NPR {{ total_amount }}</span></div>
+            <div class="d-flex justify-content-between mb-2"><span>Tax</span><span>NPR 0</span></div>
+            <div class="d-flex justify-content-between mb-2"><span>Service Charge</span><span>NPR 0</span></div>
+            <hr>
+            <div class="d-flex justify-content-between"><span>Grand Total</span><span class="fw-bold text-success">NPR {{ total_amount }}</span></div>
+        </div></div>
+    </div>
+</div>
+
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-header"><h5 class="mb-0"><i class="ti ti-credit-card me-2"></i>eSewa Payment Gateway</h5></div>
+            <div class="card-body text-center py-6">
+                <!-- eSewa Payment Form -->
+                <form id="esewaForm" method="POST" action="{{ esewa_url }}">
+                    <input type="hidden" name="amount" value="{{ total_amount }}">
+                    <input type="hidden" name="tax_amount" value="{{ tax_amount }}">
+                    <input type="hidden" name="total_amount" value="{{ total_amount }}">
+                    <input type="hidden" name="transaction_uuid" value="{{ transaction_uuid }}">
+                    <input type="hidden" name="product_code" value="{{ merchant_code }}">
+                    <input type="hidden" name="product_service_charge" value="{{ service_charge }}">
+                    <input type="hidden" name="product_delivery_charge" value="{{ delivery_charge }}">
+                    <input type="hidden" name="success_url" value="{{ success_url }}">
+                    <input type="hidden" name="failure_url" value="{{ failure_url }}">
+                    <input type="hidden" name="signed_field_names" value="total_amount,transaction_uuid,product_code">
+                    <input type="hidden" name="signature" value="{{ signature }}">
+                    <div class="mb-4">
+                        <img src="https://esewa.com.np/common/images/esewa_logo.png" alt="eSewa" height="60" onerror="this.style.display='none'">
+                        <p class="text-secondary mt-2">Secure payment powered by eSewa — Nepal's leading digital wallet</p>
+                    </div>
+                    <p class="mb-4">You will be redirected to eSewa's secure payment portal to complete your transaction.</p>
+                    <div class="d-flex justify-content-center gap-3">
+                        <button type="submit" class="btn btn-success btn-lg px-6">
+                            <i class="ti ti-credit-card me-2"></i>Pay NPR {{ total_amount }} via eSewa
+                        </button>
+                        <a href="/billing/detail/{{ bill.pk }}/" class="btn btn-outline-secondary btn-lg">
+                            <i class="ti ti-arrow-left me-1"></i>Cancel
+                        </a>
+                    </div>
+                    <p class="text-secondary mt-3"><small>ℹ️ Demo mode: Uses eSewa test environment (EPAYTEST). In production, real merchant credentials will be configured.</small></p>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

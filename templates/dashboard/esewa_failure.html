@@ -1,0 +1,26 @@
+{% extends "dashboard/base.html" %}
+{% block title %}eSewa Payment Failed - Hamro Hospital{% endblock %}
+{% block breadcrumb %}
+<li class="breadcrumb-item"><a href="/billing/">Cash Counter</a></li>
+<li class="breadcrumb-item active">eSewa Payment Failed</li>
+{% endblock %}
+{% block content %}
+<div class="row mb-6 g-6">
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body text-center py-8">
+                <div class="mb-4">
+                    <i class="ti ti-x-circle fs-0 text-danger" style="font-size: 80px;"></i>
+                </div>
+                <h2 class="text-danger mb-3">❌ Payment Failed</h2>
+                <p>{{ message|default:"eSewa payment was not completed. Please try again or pay at the counter." }}</p>
+                <div class="d-flex justify-content-center gap-3 mt-4">
+                    <a href="/billing/" class="btn btn-primary btn-lg">
+                        <i class="ti ti-arrow-left me-2"></i>Return to Cash Counter
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

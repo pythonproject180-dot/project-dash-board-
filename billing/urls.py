@@ -13,4 +13,7 @@ urlpatterns = [
     path('receipt-pdf/<int:pk>/', views.bill_receipt_pdf_view, name='bill_receipt_pdf_view'),
     path('receipt-jpg/<int:pk>/', views.bill_receipt_jpg_view, name='bill_receipt_jpg_view'),
     path('csv/', views.bills_csv_export, name='bills_csv_export'),
+    path('esewa/initiate/<int:pk>/', views.esewa_initiate, name='esewa_initiate'),
+    path('esewa/success/', views.esewa_success, name='esewa_success'),
+    path('esewa/failure/', views.esewa_failure, name='esewa_failure'),
 ]
